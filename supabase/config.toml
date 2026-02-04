@@ -1,1 +1,13 @@
 project_id = "nalkwmxirqrniasohagh"
+
+[functions.createRun]
+verify_jwt = false
+
+[functions.salvarResposta]
+verify_jwt = false
+
+[functions.finalizarDiagnostico]
+verify_jwt = false
+
+[functions.claimRun]
+verify_jwt = false

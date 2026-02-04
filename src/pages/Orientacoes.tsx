@@ -1,9 +1,41 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, XCircle, AlertTriangle, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, XCircle, AlertTriangle, Sparkles, Loader2 } from "lucide-react";
+import { useDiagnostic } from "@/hooks/useDiagnostic";
+import { useToast } from "@/hooks/use-toast";
 
 const Orientacoes = () => {
   const navigate = useNavigate();
+  const { createRun, publicToken } = useDiagnostic();
+  const { toast } = useToast();
+  const [isStarting, setIsStarting] = useState(false);
+
+  const handleStart = async () => {
+    setIsStarting(true);
+    
+    try {
+      // Check if we already have a run in progress
+      if (publicToken) {
+        // Already have a run, just navigate
+        navigate("/questionario/1");
+        return;
+      }
+
+      // Create new run
+      await createRun();
+      navigate("/questionario/1");
+    } catch (error) {
+      console.error('Error creating diagnostic run:', error);
+      toast({
+        title: "Erro ao iniciar",
+        description: "Não foi possível iniciar o diagnóstico. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsStarting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-rt-gradient flex items-center justify-center px-4 py-12 relative overflow-hidden">
@@ -115,12 +147,22 @@ const Orientacoes = () => {
             {/* CTA */}
             <div className="animate-fade-in-up delay-700" style={{ animationFillMode: 'backwards' }}>
               <Button 
-                onClick={() => navigate("/questionario/1")}
-                className="w-full btn-premium text-white font-semibold text-lg py-7 h-auto rounded-2xl group"
+                onClick={handleStart}
+                disabled={isStarting}
+                className="w-full btn-premium text-white font-semibold text-lg py-7 h-auto rounded-2xl group disabled:opacity-70"
               >
                 <span className="relative z-10 flex items-center justify-center">
-                  Começar diagnóstico
-                  <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                  {isStarting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                      Iniciando...
+                    </>
+                  ) : (
+                    <>
+                      Começar diagnóstico
+                      <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
                 </span>
               </Button>
             </div>

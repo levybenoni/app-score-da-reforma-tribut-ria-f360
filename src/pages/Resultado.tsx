@@ -1,21 +1,29 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, AlertTriangle, TrendingDown, FileWarning, Scale, Sparkles, Lock, MessageCircle, Calendar, FileText, DollarSign, Link2 } from "lucide-react";
+import { ArrowRight, AlertTriangle, TrendingDown, FileWarning, Scale, Sparkles, Lock, MessageCircle, Calendar, FileText, DollarSign, Link2, Loader2 } from "lucide-react";
+import { useDiagnosticResult } from "@/hooks/useDiagnosticResult";
+
+const blockIconMap: Record<string, React.ReactNode> = {
+  "blocoFiscalCredito": <FileText className="w-5 h-5" />,
+  "blocoCaixa": <DollarSign className="w-5 h-5" />,
+  "blocoCompras": <Link2 className="w-5 h-5" />,
+  "blocoContratos": <Scale className="w-5 h-5" />,
+};
+
+const blockNameMap: Record<string, string> = {
+  "blocoFiscalCredito": "Faturamento e NFs",
+  "blocoCaixa": "Controle Financeiro",
+  "blocoCompras": "Cadastros e Compras",
+  "blocoContratos": "Jurídico e Contratos",
+};
 
 const Resultado = () => {
   const navigate = useNavigate();
+  const { result, report, isPremium, isLoading, error } = useDiagnosticResult();
 
-  // Mock result - in production this would come from calculation
-  const maturityLevel = "intermediaria"; // baixa | intermediaria | alta
-  const overallScore = 45; // 0-100
-  
-  // Individual block scores
-  const blockScores = [
-    { name: "Faturamento e NFs", score: 60, icon: <FileText className="w-5 h-5" /> },
-    { name: "Controle Financeiro", score: 40, icon: <DollarSign className="w-5 h-5" /> },
-    { name: "Cadastros e Compras", score: 35, icon: <Link2 className="w-5 h-5" /> },
-    { name: "Jurídico e Contratos", score: 45, icon: <Scale className="w-5 h-5" /> },
-  ];
+  // Determine maturity level from result or default
+  const overallScore = result?.percentualGeral ?? 0;
+  const maturityLevel = result?.nivelMaturidadeGeral?.toLowerCase() ?? "intermediaria";
 
   const maturityConfig = {
     baixa: {
@@ -35,7 +43,35 @@ const Resultado = () => {
     },
   };
 
-  const config = maturityConfig[maturityLevel];
+  const config = maturityConfig[maturityLevel as keyof typeof maturityConfig] || maturityConfig.intermediaria;
+
+  // Build block scores from result
+  const blockScores = [
+    { 
+      key: "blocoFiscalCredito",
+      name: blockNameMap["blocoFiscalCredito"], 
+      score: result?.blocoFiscalCreditoPercentual ?? 0, 
+      icon: blockIconMap["blocoFiscalCredito"] 
+    },
+    { 
+      key: "blocoCaixa",
+      name: blockNameMap["blocoCaixa"], 
+      score: result?.blocoCaixaPercentual ?? 0, 
+      icon: blockIconMap["blocoCaixa"] 
+    },
+    { 
+      key: "blocoCompras",
+      name: blockNameMap["blocoCompras"], 
+      score: result?.blocoComprasPercentual ?? 0, 
+      icon: blockIconMap["blocoCompras"] 
+    },
+    { 
+      key: "blocoContratos",
+      name: blockNameMap["blocoContratos"], 
+      score: result?.blocoContratosPercentual ?? 0, 
+      icon: blockIconMap["blocoContratos"] 
+    },
+  ];
 
   const alerts = [
     {
@@ -63,11 +99,34 @@ const Resultado = () => {
     },
   ];
 
-  const isPremium = false; // Mock - would come from auth
-
   const handleWhatsApp = () => {
     window.open("https://wa.me/551132314580", "_blank");
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-rt-gradient flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-white animate-spin mx-auto mb-4" />
+          <p className="text-white/80">Carregando resultado...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !result) {
+    return (
+      <div className="min-h-screen bg-rt-gradient flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
+          <p className="text-white text-lg mb-4">{error}</p>
+          <Button onClick={() => navigate("/")} variant="outline">
+            Iniciar novo diagnóstico
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-rt-gradient flex items-center justify-center px-4 py-8 relative overflow-hidden">
@@ -133,7 +192,7 @@ const Resultado = () => {
                       </defs>
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-4xl font-bold text-card-foreground">{overallScore}%</span>
+                      <span className="text-4xl font-bold text-card-foreground">{Math.round(overallScore)}%</span>
                     </div>
                   </div>
 
@@ -162,7 +221,7 @@ const Resultado = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-medium text-card-foreground text-sm truncate">{block.name}</span>
-                        <span className="font-bold text-rt-purple ml-2">{block.score}%</span>
+                        <span className="font-bold text-rt-purple ml-2">{Math.round(block.score)}%</span>
                       </div>
                       <div className="h-2 bg-rt-purple/10 rounded-full overflow-hidden">
                         <div 
@@ -185,6 +244,26 @@ const Resultado = () => {
                 </p>
               </div>
             </div>
+
+            {/* AI Report Content (if available) */}
+            {report?.conteudoMarkdown && (
+              <div className="relative mb-8">
+                <h3 className="font-semibold text-card-foreground mb-4 text-lg flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-rt-purple" />
+                  Análise detalhada
+                </h3>
+                <div className={`glass-card rounded-2xl p-6 border border-rt-purple/10 ${!isPremium ? 'max-h-64 overflow-hidden relative' : ''}`}>
+                  <div className="prose prose-sm max-w-none text-card-foreground">
+                    {report.conteudoMarkdown.split('\n').map((line, i) => (
+                      <p key={i} className="mb-2">{line}</p>
+                    ))}
+                  </div>
+                  {!isPremium && (
+                    <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Alerts - Desktop grid */}
             <div className="mb-8">

@@ -1,116 +1,123 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ArrowLeft, FileText, DollarSign, Link2, Scale, Check, X } from "lucide-react";
+import { ArrowRight, ArrowLeft, FileText, DollarSign, Link2, Scale, Check, X, Loader2 } from "lucide-react";
+import { useQuestions } from "@/hooks/useQuestions";
+import { useDiagnostic } from "@/hooks/useDiagnostic";
+import { useToast } from "@/hooks/use-toast";
 
-interface BlockData {
-  title: string;
-  icon: React.ReactNode;
-  description: string;
-  questions: string[];
-}
+const blockIcons: Record<string, React.ReactNode> = {
+  "FISCAL_CREDITO": <FileText className="w-6 h-6" />,
+  "CAIXA": <DollarSign className="w-6 h-6" />,
+  "CADASTROS_COMPRAS": <Link2 className="w-6 h-6" />,
+  "JURIDICO_CONTRATOS": <Scale className="w-6 h-6" />,
+};
 
-const blocksData: Record<string, BlockData> = {
-  "1": {
-    title: "Faturamento, NFs e Crédito",
-    icon: <FileText className="w-6 h-6" />,
-    description: "Faturamento e emissão de NFs são a base da tomada de crédito e da formação de preço no novo modelo tributário.",
-    questions: [
-      "A empresa possui 100% das NFs de entrada corretamente registradas?",
-      "A empresa emite 100% das NFs de saída para todas as operações?",
-      "Existe padrão e conferência das informações fiscais das NFs?",
-      "A empresa controla os créditos tributários gerados?",
-      "A empresa sabe quais operações geram ou não crédito no novo IVA?",
-    ],
-  },
-  "2": {
-    title: "Controle Financeiro e Caixa",
-    icon: <DollarSign className="w-6 h-6" />,
-    description: "Sem controle financeiro, a Reforma Tributária vira um problema de caixa, não de imposto.",
-    questions: [
-      "A empresa possui ERP implantado e integrado?",
-      "Realiza conciliação diária de bancos, cartões, Pix e recebíveis?",
-      "Possui controle de capital de giro e fluxo de caixa projetado?",
-      "Realiza gestão orçamentária (orçado x realizado)?",
-      "Conhece sua margem real por produto ou serviço?",
-    ],
-  },
-  "3": {
-    title: "Cadastros, Compras e Cadeia",
-    icon: <Link2 className="w-6 h-6" />,
-    description: "Na Reforma Tributária, comprar bem é tão importante quanto vender bem.",
-    questions: [
-      "Cadastro de fornecedores completo e atualizado?",
-      "Sabe quais fornecedores geram crédito e quais não geram?",
-      "Cadastro de clientes completo e atualizado?",
-      "Considera impacto tributário na decisão de compra?",
-      "Consegue projetar preço de venda considerando a nova tributação?",
-    ],
-  },
-  "4": {
-    title: "Jurídico e Contratos",
-    icon: <Scale className="w-6 h-6" />,
-    description: "Contratos mal preparados podem impedir o repasse do imposto.",
-    questions: [
-      "Possui contratos com 100% dos clientes?",
-      "Contratos permitem revisão de preço por mudança tributária?",
-      "Possui contratos com os principais fornecedores?",
-      "Contratos permitem repasse de novos tributos?",
-      "Já analisou contratos à luz da Reforma Tributária?",
-    ],
-  },
+const blockDescriptions: Record<string, string> = {
+  "FISCAL_CREDITO": "Faturamento e emissão de NFs são a base da tomada de crédito e da formação de preço no novo modelo tributário.",
+  "CAIXA": "Sem controle financeiro, a Reforma Tributária vira um problema de caixa, não de imposto.",
+  "CADASTROS_COMPRAS": "Na Reforma Tributária, comprar bem é tão importante quanto vender bem.",
+  "JURIDICO_CONTRATOS": "Contratos mal preparados podem impedir o repasse do imposto.",
 };
 
 const Questionario = () => {
   const navigate = useNavigate();
   const { bloco } = useParams<{ bloco: string }>();
-  const currentBlock = bloco || "1";
-  const blockData = blocksData[currentBlock];
+  const currentBlockIndex = parseInt(bloco || "1") - 1;
+  const { toast } = useToast();
   
-  const [answers, setAnswers] = useState<Record<number, boolean | null>>({
-    0: null,
-    1: null,
-    2: null,
-    3: null,
-    4: null,
-  });
-
+  const { blocks, isLoading: questionsLoading, error: questionsError } = useQuestions();
+  const { saveAnswer, publicToken } = useDiagnostic();
+  
+  const [answers, setAnswers] = useState<Record<string, boolean | null>>({});
   const [isAnimating, setIsAnimating] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
+  const currentBlock = blocks[currentBlockIndex];
+  const totalBlocks = blocks.length;
+
+  // Check if we have a valid run
+  useEffect(() => {
+    if (!publicToken) {
+      navigate("/orientacoes");
+    }
+  }, [publicToken, navigate]);
+
+  // Animation on block change
   useEffect(() => {
     setIsAnimating(true);
-    setAnswers({ 0: null, 1: null, 2: null, 3: null, 4: null });
     const timer = setTimeout(() => setIsAnimating(false), 600);
     return () => clearTimeout(timer);
-  }, [currentBlock]);
+  }, [currentBlockIndex]);
 
-  const progress = (parseInt(currentBlock) / 4) * 100;
-  const allAnswered = Object.values(answers).every((a) => a !== null);
+  const progress = totalBlocks > 0 ? ((currentBlockIndex + 1) / totalBlocks) * 100 : 0;
+  
+  const currentBlockQuestions = currentBlock?.questions || [];
+  const allAnswered = currentBlockQuestions.every((q) => answers[q.id] !== undefined && answers[q.id] !== null);
 
-  const handleAnswer = (questionIndex: number, value: boolean) => {
-    setAnswers((prev) => ({ ...prev, [questionIndex]: value }));
-  };
+  const handleAnswer = useCallback(async (questionId: string, value: boolean) => {
+    // Optimistic update
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+    
+    try {
+      await saveAnswer(questionId, value);
+    } catch (error) {
+      console.error('Error saving answer:', error);
+      // Revert on error
+      setAnswers((prev) => ({ ...prev, [questionId]: null }));
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível salvar a resposta. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  }, [saveAnswer, toast]);
 
   const handleNext = () => {
-    if (parseInt(currentBlock) < 4) {
-      navigate(`/questionario/${parseInt(currentBlock) + 1}`);
+    if (currentBlockIndex < totalBlocks - 1) {
+      navigate(`/questionario/${currentBlockIndex + 2}`);
     } else {
       navigate("/loading");
     }
   };
 
   const handleBack = () => {
-    if (parseInt(currentBlock) > 1) {
-      navigate(`/questionario/${parseInt(currentBlock) - 1}`);
+    if (currentBlockIndex > 0) {
+      navigate(`/questionario/${currentBlockIndex}`);
     } else {
       navigate("/orientacoes");
     }
   };
 
-  if (!blockData) {
-    navigate("/");
-    return null;
+  if (questionsLoading) {
+    return (
+      <div className="min-h-screen bg-rt-gradient flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-white animate-spin mx-auto mb-4" />
+          <p className="text-white/80">Carregando perguntas...</p>
+        </div>
+      </div>
+    );
   }
+
+  if (questionsError || !currentBlock) {
+    return (
+      <div className="min-h-screen bg-rt-gradient flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <p className="text-white text-lg mb-4">
+            {questionsError || "Bloco não encontrado"}
+          </p>
+          <Button onClick={() => navigate("/")} variant="outline">
+            Voltar ao início
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const blockCode = currentBlock.codigo;
+  const icon = blockIcons[blockCode] || <FileText className="w-6 h-6" />;
+  const description = blockDescriptions[blockCode] || "";
 
   return (
     <div className="min-h-screen bg-rt-gradient flex items-center justify-center px-4 py-8 relative overflow-hidden">
@@ -124,7 +131,7 @@ const Questionario = () => {
           <div className="flex items-center justify-between text-white text-sm mb-3">
             <div className="flex items-center gap-2">
               <span className="px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 font-medium">
-                Bloco {currentBlock} de 4
+                Bloco {currentBlockIndex + 1} de {totalBlocks}
               </span>
             </div>
             <span className="text-white/80">{Math.round(progress)}% concluído</span>
@@ -147,23 +154,23 @@ const Questionario = () => {
             {/* Block Header */}
             <div className="flex items-start gap-4 mb-6">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-rt-purple/10 to-rt-dark-blue/10 flex items-center justify-center text-rt-purple border border-rt-purple/10 flex-shrink-0">
-                {blockData.icon}
+                {icon}
               </div>
               <div className="flex-1">
                 <h1 className="text-xl md:text-2xl font-bold text-card-foreground mb-1">
-                  {blockData.title}
+                  {currentBlock.titulo}
                 </h1>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  {blockData.description}
+                  {description}
                 </p>
               </div>
             </div>
 
             {/* Questions - Single column, fluid layout */}
             <div className="space-y-4">
-              {blockData.questions.map((question, index) => (
+              {currentBlockQuestions.map((question, index) => (
                 <div 
-                  key={index} 
+                  key={question.id} 
                   className={`group relative bg-gradient-to-r from-white/90 to-white/70 backdrop-blur-sm rounded-2xl p-5 border border-rt-purple/5 transition-all duration-300 hover:border-rt-purple/15 hover:shadow-md ${isAnimating ? 'animate-fade-in-up' : ''}`}
                   style={{ animationDelay: `${index * 80}ms`, animationFillMode: 'backwards' }}
                 >
@@ -171,35 +178,35 @@ const Questionario = () => {
                     {/* Question text */}
                     <div className="flex items-start gap-3 flex-1 min-w-0">
                       <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-rt-purple/10 text-rt-purple text-sm font-bold flex-shrink-0">
-                        {(parseInt(currentBlock) - 1) * 5 + index + 1}
+                        {question.ordem}
                       </span>
                       <p className="text-card-foreground font-medium text-sm sm:text-base leading-relaxed pt-0.5">
-                        {question}
+                        {question.texto}
                       </p>
                     </div>
                     
                     {/* Answer buttons */}
                     <div className="flex gap-2 sm:flex-shrink-0 ml-10 sm:ml-0">
                       <button
-                        onClick={() => handleAnswer(index, true)}
+                        onClick={() => handleAnswer(question.id, true)}
                         className={`flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 border-2 min-w-[90px] ${
-                          answers[index] === true 
+                          answers[question.id] === true 
                             ? "bg-rt-light-blue border-rt-light-blue text-white shadow-lg shadow-rt-light-blue/25" 
                             : "bg-white/80 border-rt-light-blue/20 text-rt-dark-blue hover:border-rt-light-blue/50 hover:bg-rt-light-blue/5"
                         }`}
                       >
-                        <Check className={`w-4 h-4 transition-transform ${answers[index] === true ? 'scale-110' : ''}`} />
+                        <Check className={`w-4 h-4 transition-transform ${answers[question.id] === true ? 'scale-110' : ''}`} />
                         Sim
                       </button>
                       <button
-                        onClick={() => handleAnswer(index, false)}
+                        onClick={() => handleAnswer(question.id, false)}
                         className={`flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 border-2 min-w-[90px] ${
-                          answers[index] === false 
+                          answers[question.id] === false 
                             ? "bg-rt-purple border-rt-purple text-white shadow-lg shadow-rt-purple/25" 
                             : "bg-white/80 border-rt-purple/20 text-rt-purple hover:border-rt-purple/50 hover:bg-rt-purple/5"
                         }`}
                       >
-                        <X className={`w-4 h-4 transition-transform ${answers[index] === false ? 'scale-110' : ''}`} />
+                        <X className={`w-4 h-4 transition-transform ${answers[question.id] === false ? 'scale-110' : ''}`} />
                         Não
                       </button>
                     </div>
@@ -224,7 +231,7 @@ const Questionario = () => {
                 className="flex-1 h-12 btn-premium text-white font-semibold rounded-xl group disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <span className="relative z-10 flex items-center justify-center">
-                  {parseInt(currentBlock) < 4 ? "Próximo bloco" : "Ver resultado"}
+                  {currentBlockIndex < totalBlocks - 1 ? "Próximo bloco" : "Ver resultado"}
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Button>

@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDiagnostic } from "@/hooks/useDiagnostic";
+import { useToast } from "@/hooks/use-toast";
 
 const loadingTexts = [
   "Analisando riscos ocultos de margem…",
@@ -10,9 +12,15 @@ const loadingTexts = [
 
 const Loading = () => {
   const navigate = useNavigate();
+  const { finalizeDiagnostic, callWebhook, publicToken } = useDiagnostic();
+  const { toast } = useToast();
+  
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const hasStarted = useRef(false);
 
+  // Text rotation
   useEffect(() => {
     const textInterval = setInterval(() => {
       setIsExiting(true);
@@ -22,15 +30,59 @@ const Loading = () => {
       }, 300);
     }, 2000);
 
-    const navigateTimeout = setTimeout(() => {
-      navigate("/resultado");
-    }, 8000);
+    return () => clearInterval(textInterval);
+  }, []);
 
-    return () => {
-      clearInterval(textInterval);
-      clearTimeout(navigateTimeout);
+  // Main process: finalize + webhook
+  useEffect(() => {
+    if (hasStarted.current) return;
+    hasStarted.current = true;
+
+    const processDiagnostic = async () => {
+      try {
+        // Check if we have a valid run
+        if (!publicToken) {
+          throw new Error('Nenhum diagnóstico em andamento');
+        }
+
+        // Step 1: Finalize diagnostic (calculate scores)
+        console.log('Finalizing diagnostic...');
+        const finalizeResult = await finalizeDiagnostic();
+        console.log('Finalize result:', finalizeResult);
+
+        // Step 2: Call external webhook to generate AI report
+        console.log('Calling webhook...');
+        try {
+          await callWebhook();
+          console.log('Webhook completed');
+        } catch (webhookError) {
+          // Webhook may fail, but we can still show results
+          console.warn('Webhook error (non-critical):', webhookError);
+        }
+
+        // Step 3: Navigate to results
+        navigate("/resultado");
+
+      } catch (err) {
+        console.error('Error processing diagnostic:', err);
+        const message = err instanceof Error ? err.message : 'Erro desconhecido';
+        setError(message);
+        
+        toast({
+          title: "Erro no processamento",
+          description: message,
+          variant: "destructive",
+        });
+
+        // Navigate to results anyway after delay (may show partial data)
+        setTimeout(() => {
+          navigate("/resultado");
+        }, 3000);
+      }
     };
-  }, [navigate]);
+
+    processDiagnostic();
+  }, [finalizeDiagnostic, callWebhook, navigate, publicToken, toast]);
 
   return (
     <div className="min-h-screen bg-rt-gradient flex items-center justify-center px-4 relative overflow-hidden">
@@ -79,18 +131,24 @@ const Loading = () => {
 
         {/* Single status text with fade transition */}
         <div className="h-20 flex items-center justify-center mb-8">
-          <p 
-            className={`text-xl md:text-2xl font-medium text-white transition-all duration-300 ${
-              isExiting ? 'opacity-0 transform translate-y-2' : 'opacity-100 transform translate-y-0'
-            }`}
-          >
-            {loadingTexts[currentTextIndex]}
-          </p>
+          {error ? (
+            <p className="text-xl md:text-2xl font-medium text-red-300">
+              {error}
+            </p>
+          ) : (
+            <p 
+              className={`text-xl md:text-2xl font-medium text-white transition-all duration-300 ${
+                isExiting ? 'opacity-0 transform translate-y-2' : 'opacity-100 transform translate-y-0'
+              }`}
+            >
+              {loadingTexts[currentTextIndex]}
+            </p>
+          )}
         </div>
 
         {/* Subtle subtitle */}
         <p className="text-white/50 text-sm animate-pulse-soft">
-          Isso leva apenas alguns segundos.
+          {error ? "Redirecionando..." : "Isso leva apenas alguns segundos."}
         </p>
       </div>
     </div>
