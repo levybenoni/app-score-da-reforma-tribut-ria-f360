@@ -22,6 +22,11 @@ const CriarConta = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Save user data to localStorage for sync with next screen
+    localStorage.setItem('rt-user-data', JSON.stringify({
+      nome: formData.nome,
+      email: formData.email
+    }));
     navigate("/dados-complementares");
   };
 
