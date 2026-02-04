@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,11 +24,22 @@ const DadosComplementares = () => {
     regime: "",
   });
 
+  // Load saved data from previous screen
+  useEffect(() => {
+    const savedData = localStorage.getItem('rt-user-data');
+    if (savedData) {
+      const parsed = JSON.parse(savedData);
+      setFormData(prev => ({
+        ...prev,
+        nome: parsed.nome || "",
+        email: parsed.email || ""
+      }));
+    }
+  }, []);
+
   const formatWhatsApp = (value: string) => {
-    // Remove all non-digits
     const digits = value.replace(/\D/g, '');
     
-    // Apply mask: (XX) XXXXX-XXXX
     if (digits.length <= 2) {
       return digits.length > 0 ? `(${digits}` : '';
     } else if (digits.length <= 7) {
@@ -105,11 +116,13 @@ const DadosComplementares = () => {
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Row 1: Nome Completo (100%) */}
               <div className="space-y-2">
-                <Label htmlFor="nome" className="text-card-foreground font-medium">
+                <Label htmlFor="nome" className="text-card-foreground font-medium text-sm">
                   Nome Completo
                 </Label>
                 <div className="relative group">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
+                    <User className="w-4 h-4 text-rt-purple" />
+                  </div>
                   <Input
                     id="nome"
                     name="nome"
@@ -117,7 +130,7 @@ const DadosComplementares = () => {
                     placeholder="Seu nome completo"
                     value={formData.nome}
                     onChange={handleChange}
-                    className="pl-12 h-13 input-premium rounded-xl text-base"
+                    className="pl-14 h-14 input-premium rounded-xl text-base"
                   />
                 </div>
               </div>
@@ -125,11 +138,13 @@ const DadosComplementares = () => {
               {/* Row 2: Empresa (50%) + Cargo (50%) */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="empresa" className="text-card-foreground font-medium">
+                  <Label htmlFor="empresa" className="text-card-foreground font-medium text-sm">
                     Nome da Empresa
                   </Label>
                   <div className="relative group">
-                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
+                      <Building2 className="w-4 h-4 text-rt-purple" />
+                    </div>
                     <Input
                       id="empresa"
                       name="empresa"
@@ -137,17 +152,19 @@ const DadosComplementares = () => {
                       placeholder="Razão social"
                       value={formData.empresa}
                       onChange={handleChange}
-                      className="pl-12 h-13 input-premium rounded-xl text-base"
+                      className="pl-14 h-14 input-premium rounded-xl text-base"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="cargo" className="text-card-foreground font-medium">
+                  <Label htmlFor="cargo" className="text-card-foreground font-medium text-sm">
                     Seu Cargo
                   </Label>
                   <div className="relative group">
-                    <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
+                      <Briefcase className="w-4 h-4 text-rt-purple" />
+                    </div>
                     <Input
                       id="cargo"
                       name="cargo"
@@ -155,7 +172,7 @@ const DadosComplementares = () => {
                       placeholder="Ex: Diretor Financeiro"
                       value={formData.cargo}
                       onChange={handleChange}
-                      className="pl-12 h-13 input-premium rounded-xl text-base"
+                      className="pl-14 h-14 input-premium rounded-xl text-base"
                     />
                   </div>
                 </div>
@@ -164,11 +181,13 @@ const DadosComplementares = () => {
               {/* Row 3: WhatsApp (50%) + Email (50%) */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="whatsapp" className="text-card-foreground font-medium">
+                  <Label htmlFor="whatsapp" className="text-card-foreground font-medium text-sm">
                     WhatsApp
                   </Label>
                   <div className="relative group">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
+                      <Phone className="w-4 h-4 text-rt-purple" />
+                    </div>
                     <Input
                       id="whatsapp"
                       name="whatsapp"
@@ -176,17 +195,19 @@ const DadosComplementares = () => {
                       placeholder="(11) 99999-9999"
                       value={formData.whatsapp}
                       onChange={handleChange}
-                      className="pl-12 h-13 input-premium rounded-xl text-base"
+                      className="pl-14 h-14 input-premium rounded-xl text-base"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-card-foreground font-medium">
+                  <Label htmlFor="email" className="text-card-foreground font-medium text-sm">
                     E-mail
                   </Label>
                   <div className="relative group">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
+                      <Mail className="w-4 h-4 text-rt-purple" />
+                    </div>
                     <Input
                       id="email"
                       name="email"
@@ -194,7 +215,7 @@ const DadosComplementares = () => {
                       placeholder="seu@email.com"
                       value={formData.email}
                       onChange={handleChange}
-                      className="pl-12 h-13 input-premium rounded-xl text-base"
+                      className="pl-14 h-14 input-premium rounded-xl text-base"
                     />
                   </div>
                 </div>
@@ -203,16 +224,18 @@ const DadosComplementares = () => {
               {/* Row 4: Faturamento (50%) + Regime (50%) */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label className="text-card-foreground font-medium">
+                  <Label className="text-card-foreground font-medium text-sm">
                     Faturamento anual
                   </Label>
                   <div className="relative group">
-                    <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10 transition-colors group-focus-within:text-rt-purple" />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
+                      <DollarSign className="w-4 h-4 text-rt-purple" />
+                    </div>
                     <Select
                       value={formData.faturamento}
                       onValueChange={(value) => handleSelectChange("faturamento", value)}
                     >
-                      <SelectTrigger className="pl-12 h-13 input-premium rounded-xl text-base">
+                      <SelectTrigger className="pl-14 h-14 input-premium rounded-xl text-base">
                         <SelectValue placeholder="Selecione a faixa" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
@@ -227,16 +250,18 @@ const DadosComplementares = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-card-foreground font-medium">
+                  <Label className="text-card-foreground font-medium text-sm">
                     Regime tributário
                   </Label>
                   <div className="relative group">
-                    <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10 transition-colors group-focus-within:text-rt-purple" />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
+                      <FileText className="w-4 h-4 text-rt-purple" />
+                    </div>
                     <Select
                       value={formData.regime}
                       onValueChange={(value) => handleSelectChange("regime", value)}
                     >
-                      <SelectTrigger className="pl-12 h-13 input-premium rounded-xl text-base">
+                      <SelectTrigger className="pl-14 h-14 input-premium rounded-xl text-base">
                         <SelectValue placeholder="Selecione o regime" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
