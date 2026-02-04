@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, FileText, DollarSign, Link2, Scale, Sparkles, Loader2, AlertTriangle, Lock } from "lucide-react";
+import { FileText, DollarSign, Link2, Scale, Sparkles, Loader2, AlertTriangle } from "lucide-react";
 import { useDiagnosticResult } from "@/hooks/useDiagnosticResult";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { DiagnosisContent } from "@/components/DiagnosisContent";
 
 const blockIconMap: Record<string, React.ReactNode> = {
   "FISCAL_CREDITO": <FileText className="w-5 h-5" />,
@@ -159,37 +159,7 @@ const Resultado = () => {
                   <FileText className="w-5 h-5 text-rt-purple" />
                   Diagnóstico Detalhado
                 </h3>
-                
-                <div className="relative flex-1">
-                  <ScrollArea className={`${isPremium ? 'max-h-none' : 'max-h-[400px]'}`}>
-                    <div 
-                      className="prose prose-sm max-w-none text-card-foreground diagnosis-content"
-                      dangerouslySetInnerHTML={{ __html: report.conteudoMarkdown }}
-                    />
-                  </ScrollArea>
-                  
-                  {/* Free user blur overlay */}
-                  {!isPremium && (
-                    <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-white via-white/95 to-transparent flex flex-col items-center justify-end pb-6">
-                      <div className="flex items-center gap-2 mb-3 text-muted-foreground">
-                        <Lock className="w-4 h-4" />
-                        <span className="text-sm font-medium">Conteúdo exclusivo Premium</span>
-                      </div>
-                      <Button
-                        onClick={() => navigate("/criar-conta")}
-                        className="btn-premium text-white font-semibold px-8 py-6 h-auto rounded-xl group"
-                      >
-                        <span className="relative z-10 flex items-center">
-                          Desbloqueie o diagnóstico completo
-                          <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                        </span>
-                      </Button>
-                      <p className="text-xs text-muted-foreground mt-3 text-center max-w-md">
-                        Análise estratégica, plano de ação e reunião com especialista inclusos.
-                      </p>
-                    </div>
-                  )}
-                </div>
+                <DiagnosisContent content={report.conteudoMarkdown} isPremium={isPremium} />
               </div>
             )}
           </div>
