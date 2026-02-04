@@ -464,10 +464,15 @@
 
 /* Premium Input Styling */
 .input-premium {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border: 2px solid rgba(117, 76, 153, 0.1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #1f1f1f;
+}
+
+.input-premium::placeholder {
+  color: rgba(117, 76, 153, 0.4);
 }
 
 .input-premium:focus {
@@ -476,6 +481,7 @@
     0 0 0 4px rgba(117, 76, 153, 0.1),
     0 4px 20px rgba(117, 76, 153, 0.1);
   outline: none;
+  color: #1f1f1f;
 }
 
 /* Score display */
