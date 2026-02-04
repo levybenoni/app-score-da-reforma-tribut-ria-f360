@@ -4,17 +4,17 @@ import { ArrowRight, AlertTriangle, TrendingDown, FileWarning, Scale, Sparkles, 
 import { useDiagnosticResult } from "@/hooks/useDiagnosticResult";
 
 const blockIconMap: Record<string, React.ReactNode> = {
-  "blocoFiscalCredito": <FileText className="w-5 h-5" />,
-  "blocoCaixa": <DollarSign className="w-5 h-5" />,
-  "blocoCompras": <Link2 className="w-5 h-5" />,
-  "blocoContratos": <Scale className="w-5 h-5" />,
+  "FISCAL_CREDITO": <FileText className="w-5 h-5" />,
+  "CAIXA": <DollarSign className="w-5 h-5" />,
+  "CADASTROS_COMPRAS": <Link2 className="w-5 h-5" />,
+  "JURIDICO_CONTRATOS": <Scale className="w-5 h-5" />,
 };
 
 const blockNameMap: Record<string, string> = {
-  "blocoFiscalCredito": "Faturamento e NFs",
-  "blocoCaixa": "Controle Financeiro",
-  "blocoCompras": "Cadastros e Compras",
-  "blocoContratos": "Jurídico e Contratos",
+  "FISCAL_CREDITO": "Faturamento e NFs",
+  "CAIXA": "Controle Financeiro",
+  "CADASTROS_COMPRAS": "Cadastros e Compras",
+  "JURIDICO_CONTRATOS": "Jurídico e Contratos",
 };
 
 const Resultado = () => {
@@ -45,33 +45,13 @@ const Resultado = () => {
 
   const config = maturityConfig[maturityLevel as keyof typeof maturityConfig] || maturityConfig.intermediaria;
 
-  // Build block scores from result
-  const blockScores = [
-    { 
-      key: "blocoFiscalCredito",
-      name: blockNameMap["blocoFiscalCredito"], 
-      score: result?.blocoFiscalCreditoPercentual ?? 0, 
-      icon: blockIconMap["blocoFiscalCredito"] 
-    },
-    { 
-      key: "blocoCaixa",
-      name: blockNameMap["blocoCaixa"], 
-      score: result?.blocoCaixaPercentual ?? 0, 
-      icon: blockIconMap["blocoCaixa"] 
-    },
-    { 
-      key: "blocoCompras",
-      name: blockNameMap["blocoCompras"], 
-      score: result?.blocoComprasPercentual ?? 0, 
-      icon: blockIconMap["blocoCompras"] 
-    },
-    { 
-      key: "blocoContratos",
-      name: blockNameMap["blocoContratos"], 
-      score: result?.blocoContratosPercentual ?? 0, 
-      icon: blockIconMap["blocoContratos"] 
-    },
-  ];
+  // Build block scores from result.blockScores (from vwScorePorBloco)
+  const blockScores = (result?.blockScores || []).map(block => ({
+    key: block.codigoBloco || '',
+    name: blockNameMap[block.codigoBloco || ''] || block.tituloBloco || 'Bloco',
+    score: block.percentual ?? 0,
+    icon: blockIconMap[block.codigoBloco || ''] || <FileText className="w-5 h-5" />,
+  }));
 
   const alerts = [
     {

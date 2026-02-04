@@ -16,14 +16,7 @@ interface DiagnosticResult {
   percentualGeral: number | null;
   nivelMaturidadeGeral: string | null;
   statusCorGeral: string | null;
-  blocoCaixaPercentual: number | null;
-  blocoCaixaNivel: string | null;
-  blocoComprasPercentual: number | null;
-  blocoComprasNivel: string | null;
-  blocoContratosPercentual: number | null;
-  blocoContratosNivel: string | null;
-  blocoFiscalCreditoPercentual: number | null;
-  blocoFiscalCreditoNivel: string | null;
+  blockScores: BlockScore[];
 }
 
 interface AIReport {
@@ -32,13 +25,6 @@ interface AIReport {
   tipoRelatorio: string;
   conteudoMarkdown: string;
   criadoEm: string;
-}
-
-interface Entitlement {
-  id: string;
-  usuarioId: string;
-  codigoProduto: string;
-  ativo: boolean;
 }
 
 export function useDiagnosticResult() {
@@ -59,21 +45,57 @@ export function useDiagnosticResult() {
         throw new Error('No diagnostic run found');
       }
 
-      // Load scores from view
-      const { data: scoreData, error: scoreError } = await supabase
-        .from('vwScoreCompleto')
+      // Load general score from vwScoreGeral
+      const { data: scoreGeralData, error: scoreGeralError } = await supabase
+        .from('vwScoreGeral')
         .select('*')
         .eq('runId', runId)
         .maybeSingle();
 
-      if (scoreError) {
-        console.error('Error loading scores:', scoreError);
+      if (scoreGeralError) {
+        console.error('Error loading general score:', scoreGeralError);
+      }
+
+      // Load block scores from vwScorePorBloco (source of truth)
+      const { data: blockScoresData, error: blockScoresError } = await supabase
+        .from('vwScorePorBloco')
+        .select('*')
+        .eq('runId', runId);
+
+      if (blockScoresError) {
+        console.error('Error loading block scores:', blockScoresError);
         throw new Error('Failed to load diagnostic scores');
       }
 
-      if (scoreData) {
-        setResult(scoreData as DiagnosticResult);
+      // Load run status
+      const { data: runData, error: runError } = await supabase
+        .from('diagnosticRuns')
+        .select('status')
+        .eq('id', runId)
+        .maybeSingle();
+
+      if (runError) {
+        console.error('Error loading run status:', runError);
       }
+
+      // Build result object
+      const blockScores: BlockScore[] = (blockScoresData || []).map(block => ({
+        blockId: block.blockId,
+        codigoBloco: block.codigoBloco,
+        tituloBloco: block.tituloBloco,
+        percentual: block.percentual,
+        nivelMaturidade: block.nivelMaturidade,
+        statusCor: block.statusCor,
+      }));
+
+      setResult({
+        runId,
+        status: runData?.status || null,
+        percentualGeral: scoreGeralData?.percentualGeral || null,
+        nivelMaturidadeGeral: scoreGeralData?.nivelMaturidadeGeral || null,
+        statusCorGeral: scoreGeralData?.statusCorGeral || null,
+        blockScores,
+      });
 
       // Load AI report
       const { data: reportData, error: reportError } = await supabase
@@ -85,7 +107,6 @@ export function useDiagnosticResult() {
 
       if (reportError) {
         console.error('Error loading report:', reportError);
-        // Not critical - report may not exist yet
       }
 
       if (reportData) {
