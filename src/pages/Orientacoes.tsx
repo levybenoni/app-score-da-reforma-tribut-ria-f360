@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const Orientacoes = () => {
   const navigate = useNavigate();
-  const { createRun, publicToken } = useDiagnostic();
+  const { createRun, clearDiagnostic } = useDiagnostic();
   const { toast } = useToast();
   const [isStarting, setIsStarting] = useState(false);
 
@@ -15,15 +15,9 @@ const Orientacoes = () => {
     setIsStarting(true);
     
     try {
-      // Check if we already have a run in progress
-      if (publicToken) {
-        // Already have a run, just navigate
-        navigate("/questionario/1");
-        return;
-      }
-
-      // Create new run
-      await createRun();
+      // Always clear old data and create a fresh run
+      clearDiagnostic();
+      await createRun(true);
       navigate("/questionario/1");
     } catch (error) {
       console.error('Error creating diagnostic run:', error);
