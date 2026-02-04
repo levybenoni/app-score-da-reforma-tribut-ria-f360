@@ -1,23 +1,31 @@
 import { Button } from "@/components/ui/button";
-import { Check, Shield, FileText, Users, Video, ArrowRight, Lock, Sparkles } from "lucide-react";
+import { Lock, FileSearch, ClipboardCheck, TrendingUp, Target, FileDown, Users, ArrowRight } from "lucide-react";
 
 const Compra = () => {
   const benefits = [
     {
-      icon: <FileText className="w-5 h-5" />,
-      text: "Diagnóstico detalhado por área",
+      icon: <FileSearch className="w-5 h-5" />,
+      text: "Análise detalhada de cada área de risco",
     },
     {
-      icon: <Shield className="w-5 h-5" />,
-      text: "Principais riscos explicados em linguagem de negócio",
+      icon: <ClipboardCheck className="w-5 h-5" />,
+      text: "Plano de ação personalizado",
+    },
+    {
+      icon: <TrendingUp className="w-5 h-5" />,
+      text: "Simulação de impacto financeiro",
+    },
+    {
+      icon: <Target className="w-5 h-5" />,
+      text: "Recomendações estratégicas específicas",
+    },
+    {
+      icon: <FileDown className="w-5 h-5" />,
+      text: "Relatório exportado em PDF",
     },
     {
       icon: <Users className="w-5 h-5" />,
-      text: "Plano de ação priorizado",
-    },
-    {
-      icon: <Video className="w-5 h-5" />,
-      text: "Reunião online com especialista",
+      text: "Reunião estratégica de 30 min com especialista",
     },
   ];
 
@@ -32,101 +40,88 @@ const Compra = () => {
       <div className="floating-orb floating-orb-1" />
       <div className="floating-orb floating-orb-2" />
 
-      <div className="w-full max-w-xl mx-auto relative z-10">
-        {/* Header badge */}
-        <div className="flex justify-center mb-6 animate-fade-in-up">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/90 text-sm">
-            <Sparkles className="w-4 h-4" />
-            <span>Oferta exclusiva</span>
-          </div>
-        </div>
-
-        <div className="glass-card-floating rounded-3xl overflow-hidden animate-fade-in-up delay-100" style={{ animationFillMode: 'backwards' }}>
-          {/* Premium Header with gradient */}
-          <div className="relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-rt-purple via-rt-purple/90 to-rt-dark-blue" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15)_0%,_transparent_50%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(91,192,205,0.2)_0%,_transparent_50%)]" />
-            <div className="relative p-8 text-center text-white">
-              <h1 className="text-2xl lg:text-3xl font-bold mb-2">
-                Diagnóstico Completo
-              </h1>
-              <p className="text-white/80 text-sm">
-                + Reunião Estratégica com Especialista
-              </p>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="p-6 lg:p-8">
-            {/* Benefits */}
-            <div className="space-y-3 mb-8">
-              <h2 className="font-semibold text-card-foreground mb-4 text-base">
-                O que está incluso:
-              </h2>
-              {benefits.map((benefit, index) => (
-                <div 
-                  key={index} 
-                  className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-white/80 to-white/60 border border-rt-purple/10 transition-all duration-300 hover:border-rt-purple/20"
-                  style={{ animationDelay: `${200 + index * 100}ms`, animationFillMode: 'backwards' }}
-                >
-                  <div className="w-10 h-10 rounded-xl bg-rt-purple/10 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-5 h-5 text-rt-purple" />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-rt-purple">{benefit.icon}</span>
-                    <span className="text-card-foreground font-medium text-sm">{benefit.text}</span>
-                  </div>
+      <div className="w-full max-w-4xl mx-auto relative z-10">
+        <div className="glass-card-floating rounded-3xl overflow-hidden animate-fade-in-up" style={{ animationFillMode: 'backwards' }}>
+          <div className="p-8 lg:p-10">
+            {/* Two column layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+              {/* Left Column - Content */}
+              <div className="lg:col-span-3">
+                {/* Badge */}
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rt-purple/10 text-rt-purple text-sm font-medium mb-6">
+                  <Lock className="w-4 h-4" />
+                  <span>Acesso Completo</span>
                 </div>
-              ))}
-            </div>
 
-            {/* Pricing - Premium styled */}
-            <div className="relative mb-8">
-              <div className="score-display rounded-2xl p-6 text-center">
-                <p className="text-sm font-medium text-muted-foreground mb-1 uppercase tracking-wider">
-                  Valor único
+                {/* Title */}
+                <h1 className="text-3xl lg:text-4xl font-bold text-card-foreground mb-4 leading-tight">
+                  Diagnóstico<br />
+                  Estratégico Completo
+                </h1>
+
+                {/* Subtitle */}
+                <p className="text-muted-foreground mb-8 leading-relaxed">
+                  Aprofunde a análise e prepare sua empresa para a Reforma Tributária com clareza e segurança. Não deixe margem para riscos ocultos.
                 </p>
-                <div className="flex items-baseline justify-center gap-1 mb-2">
-                  <span className="text-2xl font-medium text-muted-foreground">R$</span>
-                  <span className="text-5xl font-bold bg-gradient-to-r from-rt-purple to-rt-dark-blue bg-clip-text text-transparent">
-                    247
-                  </span>
+
+                {/* Benefits list */}
+                <div className="space-y-4">
+                  {benefits.map((benefit, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-center gap-4"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-rt-dark-blue/10 flex items-center justify-center flex-shrink-0 text-rt-dark-blue">
+                        {benefit.icon}
+                      </div>
+                      <span className="text-card-foreground font-medium">{benefit.text}</span>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-muted-foreground text-sm">
-                  Pagamento único • Sem mensalidade
-                </p>
               </div>
-            </div>
 
-            {/* CTA */}
-            <div>
-              <Button
-                onClick={handlePayment}
-                className="w-full btn-premium text-white font-semibold text-lg py-7 h-auto rounded-2xl group relative overflow-hidden"
-              >
-                <span className="relative z-10 flex items-center justify-center">
-                  Prosseguir para pagamento
-                  <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
-                </span>
-              </Button>
+              {/* Right Column - Price Card */}
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                  {/* Exclusive offer badge */}
+                  <div className="flex justify-center mb-4">
+                    <span className="px-4 py-1.5 rounded-full bg-rt-dark-blue text-white text-xs font-bold uppercase tracking-wider">
+                      Oferta Exclusiva
+                    </span>
+                  </div>
 
-              {/* Security Badge */}
-              <div className="flex items-center justify-center gap-2 mt-5 text-muted-foreground text-sm">
-                <Lock className="w-4 h-4" />
-                <span>Pagamento 100% seguro</span>
+                  {/* Price label */}
+                  <p className="text-center text-muted-foreground text-sm mb-2">
+                    Investimento único
+                  </p>
+
+                  {/* Price */}
+                  <div className="text-center mb-6">
+                    <span className="text-muted-foreground text-lg">R$</span>
+                    <span className="text-5xl font-bold text-card-foreground">247</span>
+                    <span className="text-muted-foreground text-lg">,00</span>
+                  </div>
+
+                  {/* CTA Button */}
+                  <Button
+                    onClick={handlePayment}
+                    className="w-full bg-rt-dark-blue hover:bg-rt-dark-blue/90 text-white font-semibold text-base py-6 h-auto rounded-xl group"
+                  >
+                    <span className="flex items-center justify-center">
+                      Desbloquear Agora
+                      <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                  </Button>
+
+                  {/* Security text */}
+                  <p className="text-center text-muted-foreground text-xs mt-4 leading-relaxed">
+                    Ambiente seguro via Stripe.<br />
+                    Acesso imediato ao relatório.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Trust elements below card */}
-        <div className="mt-6 text-center animate-fade-in-up delay-300" style={{ animationFillMode: 'backwards' }}>
-          <img 
-            src="https://ik.imagekit.io/y082km6do/logobrancaW.png?updatedAt=1761932134888" 
-            alt="BWA Global" 
-            className="h-8 mx-auto opacity-70"
-          />
         </div>
       </div>
     </div>
