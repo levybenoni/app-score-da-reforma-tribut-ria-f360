@@ -27,11 +27,11 @@ const Questionario = () => {
   const { toast } = useToast();
   
   const { blocks, isLoading: questionsLoading, error: questionsError } = useQuestions();
-  const { saveAnswer, publicToken } = useDiagnostic();
+  const { saveAnswer, publicToken, waitForPendingSaves, hasPendingSaves } = useDiagnostic();
   
   const [answers, setAnswers] = useState<Record<string, boolean | null>>({});
   const [isAnimating, setIsAnimating] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const currentBlock = blocks[currentBlockIndex];
   const totalBlocks = blocks.length;
@@ -60,24 +60,34 @@ const Questionario = () => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
     
     try {
-      await saveAnswer(questionId, value);
-    } catch (error) {
-      console.error('Error saving answer:', error);
-      // Revert on error
-      setAnswers((prev) => ({ ...prev, [questionId]: null }));
-      toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar a resposta. Tente novamente.",
-        variant: "destructive",
+      // Fire and forget - we'll wait for pending saves before navigation
+      saveAnswer(questionId, value).catch(error => {
+        console.error('Error saving answer:', error);
+        // Revert on error
+        setAnswers((prev) => ({ ...prev, [questionId]: null }));
+        toast({
+          title: "Erro ao salvar",
+          description: "Não foi possível salvar a resposta. Tente novamente.",
+          variant: "destructive",
+        });
       });
+    } catch (error) {
+      console.error('Error initiating save:', error);
     }
   }, [saveAnswer, toast]);
 
-  const handleNext = () => {
-    if (currentBlockIndex < totalBlocks - 1) {
-      navigate(`/questionario/${currentBlockIndex + 2}`);
-    } else {
-      navigate("/loading");
+  const handleNext = async () => {
+    // Wait for any pending saves before navigating
+    setIsNavigating(true);
+    try {
+      await waitForPendingSaves();
+      if (currentBlockIndex < totalBlocks - 1) {
+        navigate(`/questionario/${currentBlockIndex + 2}`);
+      } else {
+        navigate("/loading");
+      }
+    } finally {
+      setIsNavigating(false);
     }
   };
 
@@ -220,6 +230,7 @@ const Questionario = () => {
               <Button
                 variant="outline"
                 onClick={handleBack}
+                disabled={isNavigating}
                 className="px-6 h-12 rounded-xl bg-white border-2 border-rt-purple/20 text-rt-purple hover:bg-rt-purple/5 hover:border-rt-purple/40 transition-all duration-300 font-medium"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -227,12 +238,21 @@ const Questionario = () => {
               </Button>
               <Button
                 onClick={handleNext}
-                disabled={!allAnswered}
+                disabled={!allAnswered || isNavigating}
                 className="flex-1 h-12 btn-premium text-white font-semibold rounded-xl group disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <span className="relative z-10 flex items-center justify-center">
-                  {currentBlockIndex < totalBlocks - 1 ? "Próximo bloco" : "Ver resultado"}
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  {isNavigating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      {currentBlockIndex < totalBlocks - 1 ? "Próximo bloco" : "Ver resultado"}
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
                 </span>
               </Button>
             </div>

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEY = 'diagnosticPublicToken';
@@ -19,8 +19,17 @@ export function useDiagnostic() {
     error: null,
   });
 
-  // Create a new diagnostic run
-  const createRun = useCallback(async () => {
+  // Track pending saves
+  const pendingSaves = useRef<Map<string, Promise<unknown>>>(new Map());
+
+  // Create a new diagnostic run (always creates fresh, clears old data)
+  const createRun = useCallback(async (forceNew = false) => {
+    // If forcing new or no existing token, clear old data
+    if (forceNew) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(RUN_ID_KEY);
+    }
+
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
@@ -39,6 +48,9 @@ export function useDiagnostic() {
       localStorage.setItem(STORAGE_KEY, publicToken);
       localStorage.setItem(RUN_ID_KEY, runId);
       
+      // Clear pending saves for new run
+      pendingSaves.current.clear();
+      
       setState({
         publicToken,
         runId,
@@ -54,7 +66,7 @@ export function useDiagnostic() {
     }
   }, []);
 
-  // Save an answer
+  // Save an answer with tracking
   const saveAnswer = useCallback(async (questionId: string, respostaBool: boolean) => {
     const publicToken = localStorage.getItem(STORAGE_KEY);
     
@@ -62,19 +74,42 @@ export function useDiagnostic() {
       throw new Error('No diagnostic run found');
     }
 
-    const response = await supabase.functions.invoke('salvarResposta', {
+    // Create save promise and track it
+    const savePromise = supabase.functions.invoke('salvarResposta', {
       body: {
         publicToken,
         questionId,
         respostaBool,
       },
+    }).then(response => {
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to save answer');
+      }
+      return response.data;
+    }).finally(() => {
+      // Remove from pending when complete
+      pendingSaves.current.delete(questionId);
     });
 
-    if (response.error) {
-      throw new Error(response.error.message || 'Failed to save answer');
-    }
+    // Track this save
+    pendingSaves.current.set(questionId, savePromise);
 
-    return response.data;
+    return savePromise;
+  }, []);
+
+  // Wait for all pending saves to complete
+  const waitForPendingSaves = useCallback(async () => {
+    const pending = Array.from(pendingSaves.current.values());
+    if (pending.length > 0) {
+      console.log(`Waiting for ${pending.length} pending saves...`);
+      await Promise.all(pending);
+      console.log('All saves complete');
+    }
+  }, []);
+
+  // Check if there are pending saves
+  const hasPendingSaves = useCallback(() => {
+    return pendingSaves.current.size > 0;
   }, []);
 
   // Finalize diagnostic
@@ -85,6 +120,9 @@ export function useDiagnostic() {
       throw new Error('No diagnostic run found');
     }
 
+    // Wait for any pending saves first
+    await waitForPendingSaves();
+
     const response = await supabase.functions.invoke('finalizarDiagnostico', {
       body: { publicToken },
     });
@@ -94,7 +132,7 @@ export function useDiagnostic() {
     }
 
     return response.data;
-  }, []);
+  }, [waitForPendingSaves]);
 
   // Call external webhook
   const callWebhook = useCallback(async () => {
@@ -144,7 +182,7 @@ export function useDiagnostic() {
     return response.data;
   }, []);
 
-  // Get runId from storage or fetch if needed
+  // Get runId from storage
   const getRunId = useCallback(() => {
     return localStorage.getItem(RUN_ID_KEY);
   }, []);
@@ -153,6 +191,7 @@ export function useDiagnostic() {
   const clearDiagnostic = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(RUN_ID_KEY);
+    pendingSaves.current.clear();
     setState({
       publicToken: null,
       runId: null,
@@ -165,6 +204,8 @@ export function useDiagnostic() {
     ...state,
     createRun,
     saveAnswer,
+    waitForPendingSaves,
+    hasPendingSaves,
     finalizeDiagnostic,
     callWebhook,
     claimRun,
