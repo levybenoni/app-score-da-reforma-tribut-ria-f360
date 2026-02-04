@@ -69,13 +69,15 @@ const CriarConta = () => {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2 animate-fade-in-up delay-300" style={{ animationFillMode: 'backwards' }}>
-                <Label htmlFor="nome" className="text-card-foreground font-medium">
+                <Label htmlFor="nome" className="text-card-foreground font-medium text-sm">
                   Nome completo
                 </Label>
                 <div className="relative group">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
+                    <User className="w-4 h-4 text-rt-purple" />
+                  </div>
                   <Input
                     id="nome"
                     name="nome"
@@ -83,17 +85,19 @@ const CriarConta = () => {
                     placeholder="Seu nome"
                     value={formData.nome}
                     onChange={handleChange}
-                    className="pl-12 h-14 input-premium rounded-xl text-base"
+                    className="pl-14 h-14 input-premium rounded-xl text-base"
                   />
                 </div>
               </div>
 
               <div className="space-y-2 animate-fade-in-up delay-400" style={{ animationFillMode: 'backwards' }}>
-                <Label htmlFor="email" className="text-card-foreground font-medium">
+                <Label htmlFor="email" className="text-card-foreground font-medium text-sm">
                   E-mail
                 </Label>
                 <div className="relative group">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
+                    <Mail className="w-4 h-4 text-rt-purple" />
+                  </div>
                   <Input
                     id="email"
                     name="email"
@@ -101,17 +105,19 @@ const CriarConta = () => {
                     placeholder="seu@email.com"
                     value={formData.email}
                     onChange={handleChange}
-                    className="pl-12 h-14 input-premium rounded-xl text-base"
+                    className="pl-14 h-14 input-premium rounded-xl text-base"
                   />
                 </div>
               </div>
 
               <div className="space-y-2 animate-fade-in-up delay-500" style={{ animationFillMode: 'backwards' }}>
-                <Label htmlFor="senha" className="text-card-foreground font-medium">
+                <Label htmlFor="senha" className="text-card-foreground font-medium text-sm">
                   Senha
                 </Label>
                 <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
+                    <Lock className="w-4 h-4 text-rt-purple" />
+                  </div>
                   <Input
                     id="senha"
                     name="senha"
@@ -119,24 +125,26 @@ const CriarConta = () => {
                     placeholder="••••••••"
                     value={formData.senha}
                     onChange={handleChange}
-                    className="pl-12 pr-12 h-14 input-premium rounded-xl text-base"
+                    className="pl-14 pr-12 h-14 input-premium rounded-xl text-base"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-card-foreground transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-transparent hover:bg-rt-purple/5 flex items-center justify-center transition-colors"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showPassword ? <EyeOff className="w-4 h-4 text-muted-foreground" /> : <Eye className="w-4 h-4 text-muted-foreground" />}
                   </button>
                 </div>
               </div>
 
               <div className="space-y-2 animate-fade-in-up delay-600" style={{ animationFillMode: 'backwards' }}>
-                <Label htmlFor="confirmarSenha" className="text-card-foreground font-medium">
+                <Label htmlFor="confirmarSenha" className="text-card-foreground font-medium text-sm">
                   Confirmar senha
                 </Label>
                 <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
+                    <Lock className="w-4 h-4 text-rt-purple" />
+                  </div>
                   <Input
                     id="confirmarSenha"
                     name="confirmarSenha"
@@ -144,14 +152,14 @@ const CriarConta = () => {
                     placeholder="••••••••"
                     value={formData.confirmarSenha}
                     onChange={handleChange}
-                    className="pl-12 pr-12 h-14 input-premium rounded-xl text-base"
+                    className="pl-14 pr-12 h-14 input-premium rounded-xl text-base"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-card-foreground transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-transparent hover:bg-rt-purple/5 flex items-center justify-center transition-colors"
                   >
-                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4 text-muted-foreground" /> : <Eye className="w-4 h-4 text-muted-foreground" />}
                   </button>
                 </div>
               </div>
