@@ -10,20 +10,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowRight, Building2, Briefcase, Phone, DollarSign, FileText, Sparkles } from "lucide-react";
+import { ArrowRight, User, Building2, Briefcase, Phone, Mail, DollarSign, FileText, Sparkles } from "lucide-react";
 
 const DadosComplementares = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
+    nome: "",
     empresa: "",
     cargo: "",
     whatsapp: "",
+    email: "",
     faturamento: "",
     regime: "",
   });
 
+  const formatWhatsApp = (value: string) => {
+    // Remove all non-digits
+    const digits = value.replace(/\D/g, '');
+    
+    // Apply mask: (XX) XXXXX-XXXX
+    if (digits.length <= 2) {
+      return digits.length > 0 ? `(${digits}` : '';
+    } else if (digits.length <= 7) {
+      return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    } else if (digits.length <= 11) {
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+    }
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    
+    if (name === 'whatsapp') {
+      setFormData((prev) => ({ ...prev, [name]: formatWhatsApp(value) }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSelectChange = (name: string, value: string) => {
@@ -36,20 +59,22 @@ const DadosComplementares = () => {
   };
 
   const isFormValid = 
+    formData.nome &&
     formData.empresa && 
     formData.cargo && 
+    formData.email &&
     formData.faturamento &&
     formData.regime;
 
   return (
-    <div className="min-h-screen bg-rt-gradient flex items-center justify-center px-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen bg-rt-gradient flex items-center justify-center px-4 py-8 relative overflow-hidden">
       {/* Floating orbs */}
       <div className="floating-orb floating-orb-1" />
       <div className="floating-orb floating-orb-2" />
 
-      <div className="max-w-md w-full mx-auto relative z-10">
+      <div className="w-full max-w-2xl lg:max-w-4xl mx-auto relative z-10">
         {/* Header badge */}
-        <div className="flex justify-center mb-8 animate-fade-in-up">
+        <div className="flex justify-center mb-6 animate-fade-in-up">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/90 text-sm">
             <Sparkles className="w-4 h-4" />
             <span>Personalização do diagnóstico</span>
@@ -57,133 +82,178 @@ const DadosComplementares = () => {
         </div>
 
         <div className="glass-card-floating rounded-3xl overflow-hidden animate-fade-in-up delay-100" style={{ animationFillMode: 'backwards' }}>
-          {/* Gradient header accent */}
           <div className="h-1 bg-gradient-to-r from-rt-purple via-rt-dark-blue to-rt-light-blue" />
 
-          <div className="p-8 md:p-10">
+          <div className="p-6 lg:p-10">
             {/* Header */}
-            <div className="text-center mb-10">
-              <div className="w-20 h-20 mx-auto mb-6 relative">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 mx-auto mb-5 relative">
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-rt-purple/20 to-rt-dark-blue/20 animate-pulse-glow" />
                 <div className="relative w-full h-full rounded-2xl bg-gradient-to-br from-rt-purple/10 to-rt-dark-blue/10 flex items-center justify-center border border-rt-purple/20">
-                  <Building2 className="w-9 h-9 text-rt-purple" />
+                  <Building2 className="w-8 h-8 text-rt-purple" />
                 </div>
               </div>
-              <h1 className="text-3xl font-bold text-card-foreground mb-3 animate-text-reveal delay-200" style={{ animationFillMode: 'backwards' }}>
-                Dados da empresa
+              <h1 className="text-2xl lg:text-3xl font-bold text-card-foreground mb-2">
+                Complete seus dados
               </h1>
-              <p className="text-muted-foreground animate-text-reveal delay-300" style={{ animationFillMode: 'backwards' }}>
-                Complete seus dados para personalizar o diagnóstico.
+              <p className="text-muted-foreground">
+                Personalize seu diagnóstico com informações da empresa.
               </p>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2 animate-fade-in-up delay-300" style={{ animationFillMode: 'backwards' }}>
-                <Label htmlFor="empresa" className="text-card-foreground font-medium">
-                  Nome da empresa
+            {/* Form - Desktop grid layout */}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Row 1: Nome Completo (100%) */}
+              <div className="space-y-2">
+                <Label htmlFor="nome" className="text-card-foreground font-medium">
+                  Nome Completo
                 </Label>
                 <div className="relative group">
-                  <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
                   <Input
-                    id="empresa"
-                    name="empresa"
+                    id="nome"
+                    name="nome"
                     type="text"
-                    placeholder="Razão social"
-                    value={formData.empresa}
+                    placeholder="Seu nome completo"
+                    value={formData.nome}
                     onChange={handleChange}
-                    className="pl-12 h-14 input-premium rounded-xl text-base"
+                    className="pl-12 h-13 input-premium rounded-xl text-base"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2 animate-fade-in-up delay-400" style={{ animationFillMode: 'backwards' }}>
-                <Label htmlFor="cargo" className="text-card-foreground font-medium">
-                  Seu cargo
-                </Label>
-                <div className="relative group">
-                  <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
-                  <Input
-                    id="cargo"
-                    name="cargo"
-                    type="text"
-                    placeholder="Ex: Diretor Financeiro"
-                    value={formData.cargo}
-                    onChange={handleChange}
-                    className="pl-12 h-14 input-premium rounded-xl text-base"
-                  />
+              {/* Row 2: Empresa (50%) + Cargo (50%) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <Label htmlFor="empresa" className="text-card-foreground font-medium">
+                    Nome da Empresa
+                  </Label>
+                  <div className="relative group">
+                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
+                    <Input
+                      id="empresa"
+                      name="empresa"
+                      type="text"
+                      placeholder="Razão social"
+                      value={formData.empresa}
+                      onChange={handleChange}
+                      className="pl-12 h-13 input-premium rounded-xl text-base"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cargo" className="text-card-foreground font-medium">
+                    Seu Cargo
+                  </Label>
+                  <div className="relative group">
+                    <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
+                    <Input
+                      id="cargo"
+                      name="cargo"
+                      type="text"
+                      placeholder="Ex: Diretor Financeiro"
+                      value={formData.cargo}
+                      onChange={handleChange}
+                      className="pl-12 h-13 input-premium rounded-xl text-base"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-2 animate-fade-in-up delay-500" style={{ animationFillMode: 'backwards' }}>
-                <Label htmlFor="whatsapp" className="text-card-foreground font-medium">
-                  WhatsApp <span className="text-muted-foreground font-normal">(opcional)</span>
-                </Label>
-                <div className="relative group">
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
-                  <Input
-                    id="whatsapp"
-                    name="whatsapp"
-                    type="tel"
-                    placeholder="(11) 99999-9999"
-                    value={formData.whatsapp}
-                    onChange={handleChange}
-                    className="pl-12 h-14 input-premium rounded-xl text-base"
-                  />
+              {/* Row 3: WhatsApp (50%) + Email (50%) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <Label htmlFor="whatsapp" className="text-card-foreground font-medium">
+                    WhatsApp
+                  </Label>
+                  <div className="relative group">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
+                    <Input
+                      id="whatsapp"
+                      name="whatsapp"
+                      type="tel"
+                      placeholder="(11) 99999-9999"
+                      value={formData.whatsapp}
+                      onChange={handleChange}
+                      className="pl-12 h-13 input-premium rounded-xl text-base"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-card-foreground font-medium">
+                    E-mail
+                  </Label>
+                  <div className="relative group">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-rt-purple" />
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="seu@email.com"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="pl-12 h-13 input-premium rounded-xl text-base"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-2 animate-fade-in-up delay-600" style={{ animationFillMode: 'backwards' }}>
-                <Label className="text-card-foreground font-medium">
-                  Faturamento anual
-                </Label>
-                <div className="relative group">
-                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10 transition-colors group-focus-within:text-rt-purple" />
-                  <Select
-                    value={formData.faturamento}
-                    onValueChange={(value) => handleSelectChange("faturamento", value)}
-                  >
-                    <SelectTrigger className="pl-12 h-14 input-premium rounded-xl text-base">
-                      <SelectValue placeholder="Selecione a faixa" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="ate-360k" className="rounded-lg">Até R$ 360 mil</SelectItem>
-                      <SelectItem value="360k-4.8m" className="rounded-lg">R$ 360 mil a R$ 4,8 milhões</SelectItem>
-                      <SelectItem value="4.8m-78m" className="rounded-lg">R$ 4,8 milhões a R$ 78 milhões</SelectItem>
-                      <SelectItem value="acima-78m" className="rounded-lg">Acima de R$ 78 milhões</SelectItem>
-                    </SelectContent>
-                  </Select>
+              {/* Row 4: Faturamento (50%) + Regime (50%) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <Label className="text-card-foreground font-medium">
+                    Faturamento anual
+                  </Label>
+                  <div className="relative group">
+                    <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10 transition-colors group-focus-within:text-rt-purple" />
+                    <Select
+                      value={formData.faturamento}
+                      onValueChange={(value) => handleSelectChange("faturamento", value)}
+                    >
+                      <SelectTrigger className="pl-12 h-13 input-premium rounded-xl text-base">
+                        <SelectValue placeholder="Selecione a faixa" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="0-360k" className="rounded-lg">0 a 360 mil</SelectItem>
+                        <SelectItem value="361k-4.8m" className="rounded-lg">361 mil a 4.800.000</SelectItem>
+                        <SelectItem value="4.8m-10m" className="rounded-lg">4.800.001 a 10 milhões</SelectItem>
+                        <SelectItem value="10m-40m" className="rounded-lg">10 a 40 milhões</SelectItem>
+                        <SelectItem value="40m+" className="rounded-lg">Acima de 40 milhões</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-card-foreground font-medium">
+                    Regime tributário
+                  </Label>
+                  <div className="relative group">
+                    <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10 transition-colors group-focus-within:text-rt-purple" />
+                    <Select
+                      value={formData.regime}
+                      onValueChange={(value) => handleSelectChange("regime", value)}
+                    >
+                      <SelectTrigger className="pl-12 h-13 input-premium rounded-xl text-base">
+                        <SelectValue placeholder="Selecione o regime" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="simples" className="rounded-lg">Simples Nacional</SelectItem>
+                        <SelectItem value="presumido" className="rounded-lg">Lucro Presumido</SelectItem>
+                        <SelectItem value="real" className="rounded-lg">Lucro Real</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-2 animate-fade-in-up delay-700" style={{ animationFillMode: 'backwards' }}>
-                <Label className="text-card-foreground font-medium">
-                  Regime tributário
-                </Label>
-                <div className="relative group">
-                  <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10 transition-colors group-focus-within:text-rt-purple" />
-                  <Select
-                    value={formData.regime}
-                    onValueChange={(value) => handleSelectChange("regime", value)}
-                  >
-                    <SelectTrigger className="pl-12 h-14 input-premium rounded-xl text-base">
-                      <SelectValue placeholder="Selecione o regime" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="simples" className="rounded-lg">Simples Nacional</SelectItem>
-                      <SelectItem value="presumido" className="rounded-lg">Lucro Presumido</SelectItem>
-                      <SelectItem value="real" className="rounded-lg">Lucro Real</SelectItem>
-                      <SelectItem value="nao-sei" className="rounded-lg">Não sei informar</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="pt-4 animate-fade-in-up delay-700" style={{ animationFillMode: 'backwards' }}>
+              <div className="pt-4">
                 <Button
                   type="submit"
                   disabled={!isFormValid}
-                  className="w-full btn-premium text-white font-semibold text-lg py-7 h-auto rounded-2xl group disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-full btn-premium text-white font-semibold text-lg py-6 h-auto rounded-2xl group disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <span className="relative z-10 flex items-center justify-center">
                     Continuar para pagamento

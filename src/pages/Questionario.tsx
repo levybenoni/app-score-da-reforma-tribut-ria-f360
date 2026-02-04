@@ -118,7 +118,7 @@ const Questionario = () => {
       <div className="floating-orb floating-orb-1" />
       <div className="floating-orb floating-orb-2" />
 
-      <div className="max-w-3xl w-full mx-auto relative z-10">
+      <div className="w-full max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto relative z-10">
         {/* Progress Header */}
         <div className="mb-8 animate-fade-in-up">
           <div className="flex items-center justify-between text-white text-sm mb-3">
@@ -143,45 +143,45 @@ const Questionario = () => {
           {/* Gradient header accent */}
           <div className="h-1 bg-gradient-to-r from-rt-purple via-rt-dark-blue to-rt-light-blue" />
 
-          <div className="p-6 md:p-10">
-            {/* Block Header */}
-            <div className="flex items-center gap-5 mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rt-purple/10 to-rt-dark-blue/10 flex items-center justify-center text-rt-purple border border-rt-purple/10">
-                {blockData.icon}
+          <div className="p-6 lg:p-10">
+            {/* Block Header - Desktop horizontal layout */}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-8">
+              <div className="flex items-center gap-5">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rt-purple/10 to-rt-dark-blue/10 flex items-center justify-center text-rt-purple border border-rt-purple/10">
+                  {blockData.icon}
+                </div>
+                <div>
+                  <h1 className="text-2xl lg:text-3xl font-bold text-card-foreground">
+                    {blockData.title}
+                  </h1>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-card-foreground">
-                  {blockData.title}
-                </h1>
-              </div>
+              <p className="text-muted-foreground lg:text-right lg:max-w-md text-base leading-relaxed">
+                {blockData.description}
+              </p>
             </div>
 
-            {/* Description */}
-            <p className="text-muted-foreground mb-10 pb-8 border-b border-border/50 text-lg leading-relaxed">
-              {blockData.description}
-            </p>
-
-            {/* Questions */}
-            <div className="space-y-5">
+            {/* Questions - Desktop grid layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
               {blockData.questions.map((question, index) => (
                 <div 
                   key={index} 
-                  className={`question-card p-5 md:p-6 ${isAnimating ? 'animate-fade-in-up' : ''}`}
+                  className={`question-card p-5 lg:p-6 ${isAnimating ? 'animate-fade-in-up' : ''} ${index === 4 ? 'lg:col-span-2 lg:max-w-[calc(50%-0.625rem)]' : ''}`}
                   style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'backwards' }}
                 >
-                  <p className="text-card-foreground font-medium mb-5 leading-relaxed text-base md:text-lg">
+                  <p className="text-card-foreground font-medium mb-5 leading-relaxed text-base">
                     <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-rt-purple/10 text-rt-purple text-sm font-bold mr-3">
                       {(parseInt(currentBlock) - 1) * 5 + index + 1}
                     </span>
                     {question}
                   </p>
-                  <div className="flex gap-4">
+                  <div className="flex gap-3">
                     <button
                       onClick={() => handleAnswer(index, true)}
-                      className={`flex-1 h-14 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 btn-answer ${
+                      className={`flex-1 h-12 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 border-2 ${
                         answers[index] === true 
-                          ? "btn-answer-yes selected" 
-                          : "text-green-700 hover:text-green-800"
+                          ? "bg-rt-light-blue border-rt-light-blue text-white shadow-lg shadow-rt-light-blue/30" 
+                          : "bg-white border-rt-light-blue/30 text-rt-dark-blue hover:border-rt-light-blue hover:bg-rt-light-blue/5"
                       }`}
                     >
                       <Check className={`w-5 h-5 transition-transform ${answers[index] === true ? 'scale-110' : ''}`} />
@@ -189,10 +189,10 @@ const Questionario = () => {
                     </button>
                     <button
                       onClick={() => handleAnswer(index, false)}
-                      className={`flex-1 h-14 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 btn-answer ${
+                      className={`flex-1 h-12 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 border-2 ${
                         answers[index] === false 
-                          ? "btn-answer-no selected" 
-                          : "text-red-700 hover:text-red-800"
+                          ? "bg-rt-purple border-rt-purple text-white shadow-lg shadow-rt-purple/30" 
+                          : "bg-white border-rt-purple/30 text-rt-purple hover:border-rt-purple hover:bg-rt-purple/5"
                       }`}
                     >
                       <X className={`w-5 h-5 transition-transform ${answers[index] === false ? 'scale-110' : ''}`} />
@@ -204,11 +204,11 @@ const Questionario = () => {
             </div>
 
             {/* Navigation */}
-            <div className="flex gap-4 mt-10 pt-8 border-t border-border/50">
+            <div className="flex gap-4 pt-6 border-t border-border/50">
               <Button
                 variant="outline"
                 onClick={handleBack}
-                className="flex-1 h-14 rounded-xl border-2 border-rt-purple/20 hover:border-rt-purple/40 hover:bg-rt-purple/5 transition-all duration-300 font-medium"
+                className="flex-1 lg:flex-none lg:px-8 h-14 rounded-xl bg-white border-2 border-rt-purple/30 text-rt-purple hover:bg-rt-purple/5 hover:border-rt-purple/50 transition-all duration-300 font-medium"
               >
                 <ArrowLeft className="w-5 h-5 mr-2" />
                 Voltar
