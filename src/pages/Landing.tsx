@@ -1,72 +1,109 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Shield, TrendingUp, AlertTriangle } from "lucide-react";
+import { ArrowRight, BarChart3, Shield, TrendingUp } from "lucide-react";
 
 const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-rt-gradient flex items-center justify-center px-4 py-12">
-      <div className="max-w-3xl mx-auto text-center animate-fade-in-up">
-        {/* Logo/Brand */}
-        <div className="mb-8">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
-            <Shield className="w-5 h-5 text-white" />
-            <span className="text-white font-semibold text-sm tracking-wide">RT MATURITY SCAN</span>
+    <div className="min-h-screen bg-rt-gradient flex flex-col">
+      {/* Header */}
+      <header className="w-full px-6 md:px-12 py-6">
+        <img 
+          src="https://ik.imagekit.io/y082km6do/logobranca.png?updatedAt=1761932188284" 
+          alt="BWA Global" 
+          className="h-8 md:h-10"
+        />
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 md:py-12">
+        <div className="max-w-4xl mx-auto text-center animate-fade-in-up">
+          {/* Badge */}
+          <div className="mb-8">
+            <div className="inline-flex items-center bg-white/10 backdrop-blur-sm px-6 py-3 rounded-full border border-white/20">
+              <span className="text-white font-medium text-sm md:text-base tracking-wide">
+                Diagnóstico RT – Maturidade de Gestão para a Reforma Tributária
+              </span>
+            </div>
           </div>
-        </div>
 
-        {/* Headline */}
-        <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight mb-6">
-          A Reforma Tributária não é sobre impostos.
-          <br />
-          <span className="text-rt-light-blue">É sobre caixa, margem, preço e competitividade.</span>
-        </h1>
+          {/* Headline */}
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-8 italic">
+            Reforma Tributária
+            <br />
+            não é só imposto.
+          </h1>
 
-        {/* Subheadline */}
-        <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-          Em menos de 3 minutos, descubra se sua empresa está preparada ou exposta para a transição da Reforma Tributária (2026–2033).
-        </p>
-
-        {/* Context Text */}
-        <div className="glass-card rounded-2xl p-6 md:p-8 mb-10 max-w-2xl mx-auto text-left">
-          <p className="text-card-foreground leading-relaxed">
-            Este diagnóstico avalia a maturidade da gestão da sua empresa — não o trabalho da contabilidade.
-            <br /><br />
-            <strong className="text-rt-purple">Você vai identificar riscos ocultos que podem consumir lucro sem perceber.</strong>
+          {/* Subheadline */}
+          <p className="text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto">
+            Descubra em poucos minutos como as mudanças tributárias impactam sua{" "}
+            <span className="font-semibold">margem</span>,{" "}
+            <span className="font-semibold">caixa</span> e{" "}
+            <span className="font-semibold">competitividade</span>.
           </p>
+
+          {/* CTA Button */}
+          <Button 
+            onClick={() => navigate("/orientacoes")}
+            size="lg"
+            className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 font-medium text-base md:text-lg px-8 py-6 h-auto rounded-full border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 group"
+          >
+            Iniciar diagnóstico agora
+            <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+          </Button>
         </div>
 
-        {/* Features */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 max-w-2xl mx-auto">
-          <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4">
-            <TrendingUp className="w-6 h-6 text-rt-light-blue flex-shrink-0" />
-            <span className="text-white text-sm text-left">Avalie riscos de margem</span>
-          </div>
-          <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4">
-            <AlertTriangle className="w-6 h-6 text-rt-light-blue flex-shrink-0" />
-            <span className="text-white text-sm text-left">Identifique gaps de gestão</span>
-          </div>
-          <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4">
-            <Shield className="w-6 h-6 text-rt-light-blue flex-shrink-0" />
-            <span className="text-white text-sm text-left">Receba plano de ação</span>
+        {/* Feature Cards */}
+        <div className="w-full max-w-5xl mx-auto mt-16 md:mt-24 px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            {/* Card 1 */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/10">
+              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-5">
+                <BarChart3 className="w-6 h-6 text-white/80" />
+              </div>
+              <h3 className="text-white font-semibold text-lg mb-2">Análise Completa</h3>
+              <p className="text-white/70 text-sm leading-relaxed">
+                Avaliação em 4 dimensões estratégicas da sua maturidade tributária.
+              </p>
+            </div>
+
+            {/* Card 2 */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/10">
+              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-5">
+                <Shield className="w-6 h-6 text-white/80" />
+              </div>
+              <h3 className="text-white font-semibold text-lg mb-2">Diagnóstico Personalizado</h3>
+              <p className="text-white/70 text-sm leading-relaxed">
+                Resultado customizado com ações prioritárias para sua empresa.
+              </p>
+            </div>
+
+            {/* Card 3 */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/10">
+              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-5">
+                <TrendingUp className="w-6 h-6 text-white/80" />
+              </div>
+              <h3 className="text-white font-semibold text-lg mb-2">Visão Executiva</h3>
+              <p className="text-white/70 text-sm leading-relaxed">
+                Relatório focado em impacto no negócio, não em complexidade técnica.
+              </p>
+            </div>
           </div>
         </div>
+      </main>
 
-        {/* CTA Button */}
-        <Button 
-          onClick={() => navigate("/orientacoes")}
-          size="lg"
-          className="bg-white text-rt-purple hover:bg-white/90 font-semibold text-lg px-10 py-6 h-auto rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group"
-        >
-          Iniciar diagnóstico agora
-          <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-        </Button>
-
-        <p className="text-white/60 text-sm mt-6">
-          Gratuito • Sem cadastro • Resultado imediato
+      {/* Footer */}
+      <footer className="w-full py-8 flex flex-col items-center gap-4">
+        <img 
+          src="https://ik.imagekit.io/y082km6do/logobrancaW.png?updatedAt=1761932134888" 
+          alt="BWA Global" 
+          className="h-10 md:h-12 opacity-80"
+        />
+        <p className="text-white/60 text-sm">
+          © 2026 BWA Global. Todos os direitos reservados.
         </p>
-      </div>
+      </footer>
     </div>
   );
 };
