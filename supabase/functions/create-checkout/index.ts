@@ -25,7 +25,7 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { runId, customerEmail, customerName } = await req.json();
+    const { runId, customerEmail, customerName, userId } = await req.json();
     
     if (!runId) {
       throw new Error("runId is required");
@@ -35,7 +35,11 @@ serve(async (req) => {
       throw new Error("customerEmail is required");
     }
 
-    logStep("Request data received", { runId, customerEmail, customerName });
+    if (!userId) {
+      throw new Error("userId is required - user must be authenticated");
+    }
+
+    logStep("Request data received", { runId, customerEmail, customerName, userId });
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
@@ -54,7 +58,10 @@ serve(async (req) => {
       const newCustomer = await stripe.customers.create({
         email: customerEmail,
         name: customerName,
-        metadata: { runId }
+        metadata: { 
+          runId,
+          supabaseUserId: userId
+        }
       });
       customerId = newCustomer.id;
       logStep("New customer created", { customerId });
@@ -76,6 +83,7 @@ serve(async (req) => {
       cancel_url: `${origin}/compra`,
       metadata: {
         runId,
+        userId, // Pass the Supabase user ID in metadata
       },
     });
 

@@ -44,11 +44,46 @@ serve(async (req) => {
 
     // Retrieve the checkout session
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    logStep("Session retrieved", { status: session.payment_status, customerId: session.customer });
+    logStep("Session retrieved", { 
+      status: session.payment_status, 
+      customerId: session.customer,
+      metadata: session.metadata 
+    });
 
     if (session.payment_status !== "paid") {
       throw new Error("Payment not completed");
     }
+
+    // Get the user ID from session metadata (set during checkout creation)
+    const userId = session.metadata?.userId;
+    
+    if (!userId) {
+      // Fallback: try to get userId from the diagnosticRun
+      const { data: run } = await supabaseClient
+        .from("diagnosticRuns")
+        .select("usuarioId")
+        .eq("id", runId)
+        .single();
+      
+      if (!run?.usuarioId) {
+        throw new Error("Could not find user ID for this payment");
+      }
+      
+      logStep("User ID retrieved from diagnosticRun", { userId: run.usuarioId });
+    }
+
+    const finalUserId = userId || (await supabaseClient
+      .from("diagnosticRuns")
+      .select("usuarioId")
+      .eq("id", runId)
+      .single()
+      .then(res => res.data?.usuarioId));
+
+    if (!finalUserId) {
+      throw new Error("User ID not found");
+    }
+
+    logStep("Using user ID", { userId: finalUserId });
 
     // Check if entitlement already exists
     const { data: existingEntitlement } = await supabaseClient
@@ -72,7 +107,7 @@ serve(async (req) => {
       .insert({
         runId,
         codigoProduto: "RT_DIAG_PREMIUM",
-        usuarioId: session.customer as string,
+        usuarioId: finalUserId, // Use the Supabase user UUID
         ativo: true,
       })
       .select()
@@ -90,7 +125,7 @@ serve(async (req) => {
       .from("payments")
       .insert({
         runId,
-        usuarioId: session.customer as string,
+        usuarioId: finalUserId, // Use the Supabase user UUID
         checkoutSessionId: sessionId,
         paymentIntentId: session.payment_intent as string,
         valorCentavos: session.amount_total || 24700,

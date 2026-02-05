@@ -1,30 +1,52 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Lock, FileSearch, ClipboardCheck, TrendingUp, Target, FileDown, Users, ArrowRight } from "lucide-react";
+import { Lock, FileSearch, ClipboardCheck, TrendingUp, Target, FileDown, Users, ArrowRight, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Compra = () => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // Check if user has completed registration
-    const userData = localStorage.getItem('rt-user-data');
-    const complementaryData = localStorage.getItem('rt-complementary-data');
-    
-    if (!userData) {
-      // Redirect to criar conta with return intent
-      localStorage.setItem('rt-checkout-intent', 'true');
-      navigate('/criar-conta');
-      return;
-    }
-    
-    if (!complementaryData) {
-      // Redirect to dados complementares
-      localStorage.setItem('rt-checkout-intent', 'true');
-      navigate('/dados-complementares');
-      return;
-    }
+    const checkAuth = async () => {
+      setIsCheckingAuth(true);
+      
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        // Redirect to criar conta with return intent
+        localStorage.setItem('rt-checkout-intent', 'true');
+        navigate('/criar-conta');
+        return;
+      }
+
+      // Check if complementary data exists
+      const complementaryData = localStorage.getItem('rt-complementary-data');
+      if (!complementaryData) {
+        localStorage.setItem('rt-checkout-intent', 'true');
+        navigate('/dados-complementares');
+        return;
+      }
+
+      setIsCheckingAuth(false);
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session && !isCheckingAuth) {
+        navigate('/criar-conta');
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
+
   const benefits = [
     {
       icon: <FileSearch className="w-5 h-5" />,
@@ -54,28 +76,37 @@ const Compra = () => {
 
   const handlePayment = async () => {
     const runId = localStorage.getItem('diagnosticRunId');
-    const userData = JSON.parse(localStorage.getItem('rt-user-data') || '{}');
     
     if (!runId) {
-      alert("Diagnóstico não encontrado. Por favor, complete o questionário primeiro.");
+      toast.error("Diagnóstico não encontrado. Por favor, complete o questionário primeiro.");
       navigate('/');
       return;
     }
 
+    setIsLoading(true);
+
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
+      // Get current authenticated user
+      const { data: { session } } = await supabase.auth.getSession();
       
+      if (!session?.user) {
+        toast.error("Você precisa estar logado para continuar.");
+        navigate('/criar-conta');
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
           runId,
-          customerEmail: userData.email,
-          customerName: userData.nome,
+          customerEmail: session.user.email,
+          customerName: session.user.user_metadata?.nome || session.user.email?.split('@')[0],
+          userId: session.user.id, // Pass the Supabase user ID
         },
       });
 
       if (error) {
         console.error('Checkout error:', error);
-        alert('Erro ao iniciar o pagamento. Tente novamente.');
+        toast.error('Erro ao iniciar o pagamento. Tente novamente.');
         return;
       }
 
@@ -84,9 +115,19 @@ const Compra = () => {
       }
     } catch (err) {
       console.error('Payment error:', err);
-      alert('Erro ao processar o pagamento. Tente novamente.');
+      toast.error('Erro ao processar o pagamento. Tente novamente.');
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-rt-gradient flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-white animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-rt-gradient flex items-center justify-center px-4 py-8 relative overflow-hidden">
@@ -159,11 +200,21 @@ const Compra = () => {
                   {/* CTA Button */}
                   <Button
                     onClick={handlePayment}
+                    disabled={isLoading}
                     className="w-full bg-rt-dark-blue hover:bg-rt-dark-blue/90 text-white font-semibold text-base py-6 h-auto rounded-xl group"
                   >
                     <span className="flex items-center justify-center">
-                      Desbloquear Agora
-                      <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Processando...
+                        </>
+                      ) : (
+                        <>
+                          Desbloquear Agora
+                          <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                        </>
+                      )}
                     </span>
                   </Button>
 

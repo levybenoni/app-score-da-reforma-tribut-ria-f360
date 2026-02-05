@@ -3,12 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, User, Mail, Lock, Eye, EyeOff, Sparkles, Shield } from "lucide-react";
+import { ArrowRight, User, Mail, Lock, Eye, EyeOff, Sparkles, Shield, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const CriarConta = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -20,14 +23,73 @@ const CriarConta = () => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Save user data to localStorage for sync with next screen
-    localStorage.setItem('rt-user-data', JSON.stringify({
-      nome: formData.nome,
-      email: formData.email
-    }));
-    navigate("/dados-complementares");
+    
+    if (formData.senha !== formData.confirmarSenha) {
+      toast.error("As senhas não coincidem");
+      return;
+    }
+
+    if (formData.senha.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Sign up with Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.senha,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dados-complementares`,
+          data: {
+            nome: formData.nome,
+          },
+        },
+      });
+
+      if (error) {
+        if (error.message.includes("already registered")) {
+          toast.error("Este e-mail já está cadastrado. Tente fazer login.");
+        } else {
+          toast.error(error.message);
+        }
+        return;
+      }
+
+      if (data.user) {
+        // Save user data to localStorage for sync with next screen
+        localStorage.setItem('rt-user-data', JSON.stringify({
+          nome: formData.nome,
+          email: formData.email,
+          userId: data.user.id
+        }));
+
+        // Update the diagnosticRun with the user ID
+        const runId = localStorage.getItem('diagnosticRunId');
+        if (runId) {
+          await supabase
+            .from('diagnosticRuns')
+            .update({ 
+              usuarioId: data.user.id,
+              leadEmail: formData.email,
+              leadNome: formData.nome
+            })
+            .eq('id', runId);
+        }
+
+        toast.success("Conta criada com sucesso!");
+        navigate("/dados-complementares");
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      toast.error("Erro ao criar conta. Tente novamente.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isFormValid = 
@@ -90,6 +152,7 @@ const CriarConta = () => {
                     placeholder="Seu nome"
                     value={formData.nome}
                     onChange={handleChange}
+                    disabled={isLoading}
                     className="pl-14 h-14 input-premium rounded-xl text-base"
                   />
                 </div>
@@ -110,6 +173,7 @@ const CriarConta = () => {
                     placeholder="seu@email.com"
                     value={formData.email}
                     onChange={handleChange}
+                    disabled={isLoading}
                     className="pl-14 h-14 input-premium rounded-xl text-base"
                   />
                 </div>
@@ -130,6 +194,7 @@ const CriarConta = () => {
                     placeholder="••••••••"
                     value={formData.senha}
                     onChange={handleChange}
+                    disabled={isLoading}
                     className="pl-14 pr-12 h-14 input-premium rounded-xl text-base"
                   />
                   <button
@@ -157,6 +222,7 @@ const CriarConta = () => {
                     placeholder="••••••••"
                     value={formData.confirmarSenha}
                     onChange={handleChange}
+                    disabled={isLoading}
                     className="pl-14 pr-12 h-14 input-premium rounded-xl text-base"
                   />
                   <button
@@ -172,12 +238,21 @@ const CriarConta = () => {
               <div className="pt-4 animate-fade-in-up delay-700" style={{ animationFillMode: 'backwards' }}>
                 <Button
                   type="submit"
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || isLoading}
                   className="w-full btn-premium text-white font-semibold text-lg py-7 h-auto rounded-2xl group disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <span className="relative z-10 flex items-center justify-center">
-                    Criar conta e continuar
-                    <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                        Criando conta...
+                      </>
+                    ) : (
+                      <>
+                        Criar conta e continuar
+                        <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
                   </span>
                 </Button>
               </div>
