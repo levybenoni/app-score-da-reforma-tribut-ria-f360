@@ -91,24 +91,35 @@ const Compra = () => {
       return;
     }
 
+    // STEP 1: Check if user is authenticated
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session?.user) {
+      // Not authenticated - redirect to create account
+      localStorage.setItem('rt-checkout-intent', 'true');
+      navigate('/criar-conta');
+      return;
+    }
+
+    // STEP 2: Check if complementary data exists
+    const complementaryData = localStorage.getItem('rt-complementary-data');
+    if (!complementaryData) {
+      // No complementary data - redirect to fill it
+      localStorage.setItem('rt-checkout-intent', 'true');
+      navigate('/dados-complementares');
+      return;
+    }
+
+    // STEP 3: All validations passed - proceed to checkout
     setIsLoading(true);
 
     try {
-      // Get current authenticated user
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.user) {
-        toast.error("Você precisa estar logado para continuar.");
-        navigate('/criar-conta');
-        return;
-      }
-
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
           runId,
           customerEmail: session.user.email,
           customerName: session.user.user_metadata?.nome || session.user.email?.split('@')[0],
-          userId: session.user.id, // Pass the Supabase user ID
+          userId: session.user.id,
         },
       });
 
