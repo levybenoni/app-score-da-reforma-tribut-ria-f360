@@ -169,31 +169,42 @@ const Resultado = () => {
                   Diagnóstico Detalhado
                 </h3>
                 
-                {/* Container for raw HTML - respects Free vs Premium */}
-                <div className="relative">
+                {/* Container wrapper - controls FREE vs PREMIUM access */}
+                <div className={`diagnostico-wrapper relative ${!isPremium ? 'free' : ''}`}>
+                  {/* HTML content container */}
                   <div 
-                    className={`diagnostico-html bg-white/50 rounded-2xl p-6 overflow-auto ${
-                      !isPremium ? 'max-h-[400px]' : ''
+                    className={`diagnostico-html bg-white/50 rounded-2xl p-6 ${
+                      !isPremium 
+                        ? 'max-h-[900px] overflow-hidden' 
+                        : ''
                     }`}
                     dangerouslySetInnerHTML={{ __html: htmlReport }}
                   />
                   
-                  {/* Blur overlay for Free users */}
+                  {/* Premium overlay for Free users - blocks access to content below */}
                   {!isPremium && (
-                    <div className="absolute inset-0 top-[200px] bg-gradient-to-t from-white via-white/95 to-transparent rounded-2xl flex flex-col items-center justify-end pb-8">
-                      <div className="text-center px-6">
-                        <div className="w-12 h-12 rounded-full bg-rt-purple/10 flex items-center justify-center mx-auto mb-4">
-                          <Lock className="w-6 h-6 text-rt-purple" />
+                    <div 
+                      className="absolute bottom-0 left-0 right-0 rounded-b-2xl flex flex-col items-center justify-end"
+                      style={{
+                        height: '350px',
+                        background: 'linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0.98) 40%, rgba(255,255,255,0.9) 70%, rgba(255,255,255,0) 100%)',
+                        backdropFilter: 'blur(4px)',
+                      }}
+                    >
+                      <div className="text-center px-6 pb-8">
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-rt-purple/20 to-rt-dark-blue/20 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                          <Lock className="w-7 h-7 text-rt-purple" />
                         </div>
-                        <h4 className="text-lg font-semibold text-card-foreground mb-2">
+                        <h4 className="text-xl font-bold text-card-foreground mb-3">
                           Desbloqueie o diagnóstico completo
                         </h4>
-                        <p className="text-muted-foreground text-sm mb-4 max-w-md">
+                        <p className="text-muted-foreground text-sm mb-5 max-w-sm leading-relaxed">
                           Acesse a análise estratégica completa, plano de ação personalizado e reunião com especialista.
                         </p>
                         <Button 
                           onClick={() => navigate("/compra")}
-                          className="bg-gradient-to-r from-rt-purple to-rt-dark-blue hover:opacity-90"
+                          size="lg"
+                          className="bg-gradient-to-r from-rt-purple to-rt-dark-blue hover:opacity-90 shadow-lg px-8"
                         >
                           Desbloquear agora
                         </Button>
