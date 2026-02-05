@@ -19,7 +19,7 @@ const blockNameMap: Record<string, string> = {
 
 const Resultado = () => {
   const navigate = useNavigate();
-  const { result, htmlReport, isPremium, isLoading, error } = useDiagnosticResult();
+  const { result, htmlReport, isPremium, isLoading, isLoadingHtml, error } = useDiagnosticResult();
 
   const overallScore = result?.percentualGeral ?? 0;
   const maturityLevel = result?.nivelMaturidadeGeral?.toLowerCase() ?? "intermediaria";
@@ -151,7 +151,18 @@ const Resultado = () => {
               </div>
             </div>
 
-            {/* Diagnóstico Detalhado Section - Raw HTML from webhook */}
+            {/* Diagnóstico Detalhado Section - HTML from Supabase */}
+            {isLoadingHtml && !htmlReport && (
+              <div className="flex-1 flex flex-col mt-4 border-t border-border/30 pt-8">
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <Loader2 className="w-8 h-8 text-rt-purple animate-spin mx-auto mb-3" />
+                    <p className="text-muted-foreground text-sm">Finalizando análise do diagnóstico…</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {htmlReport && (
               <div className="flex-1 flex flex-col mt-4 border-t border-border/30 pt-8">
                 <h3 className="font-semibold text-card-foreground mb-6 text-xl flex items-center gap-2">
