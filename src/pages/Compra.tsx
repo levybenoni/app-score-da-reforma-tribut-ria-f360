@@ -24,55 +24,72 @@ const Compra = () => {
         return;
       }
 
-      // Get runId from localStorage
+      // Get publicToken and runId from localStorage
+      const publicToken = localStorage.getItem('rt-public-token');
       const runId = localStorage.getItem('diagnosticRunId');
       
-      if (!runId) {
+      if (!publicToken && !runId) {
         toast.error("Diagnóstico não encontrado. Inicie um novo.");
         navigate('/orientacoes');
         return;
       }
 
-      // Check if complementary data exists in Supabase (not localStorage)
-      const { data: run, error } = await supabase
-        .from('diagnosticRuns')
-        .select('nomeEmpresa, cargoUsuario, faturamentoAnual, regimeTributario, usuarioId')
-        .eq('id', runId)
-        .single();
-
-      if (error || !run) {
-        console.error('Error fetching run:', error);
-        toast.error("Diagnóstico não encontrado.");
-        navigate('/orientacoes');
-        return;
-      }
-
-      // Check if the run is linked to this user
-      if (run.usuarioId !== session.user.id) {
-        // Run exists but not linked to this user - try to claim it
-        const publicToken = localStorage.getItem('rt-public-token');
-        if (publicToken) {
-          const { data: claimData, error: claimError } = await supabase.functions.invoke('claimRun', {
-            body: { publicToken }
-          });
-          
-          if (claimError) {
-            console.error('Error claiming run:', claimError);
-            toast.error("Erro ao vincular diagnóstico.");
-            navigate('/orientacoes');
-            return;
+      // FIRST: Try to claim the run (this links it to the user if not already linked)
+      // This is necessary because RLS requires usuarioId = auth.uid() for SELECT
+      if (publicToken) {
+        const { data: claimData, error: claimError } = await supabase.functions.invoke('claimRun', {
+          body: { 
+            publicToken,
+            leadNome: session.user.user_metadata?.nome,
+            leadEmail: session.user.email
           }
+        });
+        
+        if (claimError) {
+          console.error('Error claiming run:', claimError);
+          toast.error("Erro ao vincular diagnóstico.");
+          navigate('/orientacoes');
+          return;
+        }
+
+        // If claim returns profile complete status, use it
+        if (claimData?.isProfileComplete === false) {
+          localStorage.setItem('rt-checkout-intent', 'true');
+          navigate('/dados-complementares');
+          return;
+        }
+        
+        if (claimData?.isProfileComplete === true) {
+          // All good - user can proceed to checkout
+          setIsCheckingAuth(false);
+          return;
         }
       }
 
-      // Check if complementary data is complete
-      const isProfileComplete = !!(run.nomeEmpresa && run.cargoUsuario && run.faturamentoAnual && run.regimeTributario);
-      
-      if (!isProfileComplete) {
-        // Missing complementary data - redirect to fill it
-        localStorage.setItem('rt-checkout-intent', 'true');
-        navigate('/dados-complementares');
-        return;
+      // Fallback: Query the run directly (should work now that it's claimed)
+      if (runId) {
+        const { data: run, error } = await supabase
+          .from('diagnosticRuns')
+          .select('nomeEmpresa, cargoUsuario, faturamentoAnual, regimeTributario, usuarioId')
+          .eq('id', runId)
+          .eq('usuarioId', session.user.id)
+          .single();
+
+        if (error || !run) {
+          console.error('Error fetching run:', error);
+          toast.error("Diagnóstico não encontrado. Inicie um novo.");
+          navigate('/orientacoes');
+          return;
+        }
+
+        // Check if complementary data is complete
+        const isProfileComplete = !!(run.nomeEmpresa && run.cargoUsuario && run.faturamentoAnual && run.regimeTributario);
+        
+        if (!isProfileComplete) {
+          localStorage.setItem('rt-checkout-intent', 'true');
+          navigate('/dados-complementares');
+          return;
+        }
       }
 
       // All good - user can proceed to checkout
