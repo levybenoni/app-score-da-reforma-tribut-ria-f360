@@ -175,7 +175,7 @@ const Resultado = () => {
                   <div 
                     className={`diagnostico-html bg-white/50 rounded-2xl p-6 ${
                       !isPremium 
-                        ? 'max-h-[900px] overflow-hidden' 
+                        ? 'max-h-[1600px] overflow-hidden' 
                         : ''
                     }`}
                     dangerouslySetInnerHTML={{ __html: htmlReport }}
