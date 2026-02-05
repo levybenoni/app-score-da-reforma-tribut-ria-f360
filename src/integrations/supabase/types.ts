@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       aiReports: {
         Row: {
+          conteudoHtml: string | null
           conteudoMarkdown: string
           criadoEm: string
           id: string
@@ -23,6 +24,7 @@ export type Database = {
           tipoRelatorio: string
         }
         Insert: {
+          conteudoHtml?: string | null
           conteudoMarkdown: string
           criadoEm?: string
           id?: string
@@ -30,6 +32,7 @@ export type Database = {
           tipoRelatorio: string
         }
         Update: {
+          conteudoHtml?: string | null
           conteudoMarkdown?: string
           criadoEm?: string
           id?: string
