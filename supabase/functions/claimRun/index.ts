@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const body = await req.json()
-    const { publicToken } = body
+    const { publicToken, leadNome, leadEmail } = body
 
     if (!publicToken) {
       return new Response(
@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
     // Get the run by publicToken
     const { data: run, error: runError } = await supabase
       .from('diagnosticRuns')
-      .select('id, usuarioId')
+      .select('id, usuarioId, nomeEmpresa, cargoUsuario, faturamentoAnual, regimeTributario')
       .eq('publicToken', publicToken)
       .single()
 
@@ -85,19 +85,41 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Build update object
+    const updateData: Record<string, unknown> = { usuarioId: userId }
+    if (leadNome) updateData.leadNome = leadNome
+    if (leadEmail) updateData.leadEmail = leadEmail
+
     // Check if already claimed by same user
     if (run.usuarioId === userId) {
       console.log('Run already claimed by same user:', run.id)
+      
+      // Still update leadNome/leadEmail if provided
+      if (leadNome || leadEmail) {
+        await supabase
+          .from('diagnosticRuns')
+          .update(updateData)
+          .eq('id', run.id)
+      }
+      
+      // Check if complementary data is complete
+      const isProfileComplete = !!(run.nomeEmpresa && run.cargoUsuario && run.faturamentoAnual && run.regimeTributario)
+      
       return new Response(
-        JSON.stringify({ success: true, runId: run.id, alreadyClaimed: true }),
+        JSON.stringify({ 
+          success: true, 
+          runId: run.id, 
+          alreadyClaimed: true,
+          isProfileComplete 
+        }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Claim the run
+    // Claim the run with optional lead data
     const { error: updateError } = await supabase
       .from('diagnosticRuns')
-      .update({ usuarioId: userId })
+      .update(updateData)
       .eq('id', run.id)
 
     if (updateError) {
@@ -109,9 +131,16 @@ Deno.serve(async (req) => {
     }
 
     console.log('Claimed diagnostic run:', run.id, 'for user:', userId)
+    
+    // Check if complementary data is complete
+    const isProfileComplete = !!(run.nomeEmpresa && run.cargoUsuario && run.faturamentoAnual && run.regimeTributario)
 
     return new Response(
-      JSON.stringify({ success: true, runId: run.id }),
+      JSON.stringify({ 
+        success: true, 
+        runId: run.id,
+        isProfileComplete 
+      }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
