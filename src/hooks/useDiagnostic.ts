@@ -134,7 +134,7 @@ export function useDiagnostic() {
     return response.data;
   }, [waitForPendingSaves]);
 
-  // Call external webhook
+  // Call external webhook and store raw HTML response
   const callWebhook = useCallback(async () => {
     const runId = localStorage.getItem(RUN_ID_KEY);
     
@@ -154,7 +154,13 @@ export function useDiagnostic() {
       throw new Error(`Webhook failed: ${response.status}`);
     }
 
-    return await response.json();
+    // Get raw HTML response (NOT JSON)
+    const htmlContent = await response.text();
+    
+    // Store the raw HTML in localStorage for the result page
+    localStorage.setItem('diagnosticHtmlReport', htmlContent);
+
+    return htmlContent;
   }, []);
 
   // Claim run for authenticated user

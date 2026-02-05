@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { FileText, DollarSign, Link2, Scale, Sparkles, Loader2, AlertTriangle } from "lucide-react";
+import { FileText, DollarSign, Link2, Scale, Sparkles, Loader2, AlertTriangle, Lock } from "lucide-react";
 import { useDiagnosticResult } from "@/hooks/useDiagnosticResult";
-import { DiagnosisContent } from "@/components/DiagnosisContent";
 
 const blockIconMap: Record<string, React.ReactNode> = {
   "FISCAL_CREDITO": <FileText className="w-5 h-5" />,
@@ -20,7 +20,16 @@ const blockNameMap: Record<string, string> = {
 
 const Resultado = () => {
   const navigate = useNavigate();
-  const { result, report, isPremium, isLoading, error } = useDiagnosticResult();
+  const { result, isPremium, isLoading, error } = useDiagnosticResult();
+  const [htmlReport, setHtmlReport] = useState<string | null>(null);
+
+  // Load raw HTML report from localStorage
+  useEffect(() => {
+    const storedHtml = localStorage.getItem('diagnosticHtmlReport');
+    if (storedHtml) {
+      setHtmlReport(storedHtml);
+    }
+  }, []);
 
   const overallScore = result?.percentualGeral ?? 0;
   const maturityLevel = result?.nivelMaturidadeGeral?.toLowerCase() ?? "intermediaria";
@@ -152,14 +161,46 @@ const Resultado = () => {
               </div>
             </div>
 
-            {/* Diagnóstico Detalhado Section */}
-            {report?.conteudoMarkdown && (
+            {/* Diagnóstico Detalhado Section - Raw HTML from webhook */}
+            {htmlReport && (
               <div className="flex-1 flex flex-col mt-4 border-t border-border/30 pt-8">
                 <h3 className="font-semibold text-card-foreground mb-6 text-xl flex items-center gap-2">
                   <FileText className="w-5 h-5 text-rt-purple" />
                   Diagnóstico Detalhado
                 </h3>
-                <DiagnosisContent content={report.conteudoMarkdown} isPremium={isPremium} />
+                
+                {/* Container for raw HTML - respects Free vs Premium */}
+                <div className="relative">
+                  <div 
+                    className={`diagnostico-html bg-white/50 rounded-2xl p-6 overflow-auto ${
+                      !isPremium ? 'max-h-[400px]' : ''
+                    }`}
+                    dangerouslySetInnerHTML={{ __html: htmlReport }}
+                  />
+                  
+                  {/* Blur overlay for Free users */}
+                  {!isPremium && (
+                    <div className="absolute inset-0 top-[200px] bg-gradient-to-t from-white via-white/95 to-transparent rounded-2xl flex flex-col items-center justify-end pb-8">
+                      <div className="text-center px-6">
+                        <div className="w-12 h-12 rounded-full bg-rt-purple/10 flex items-center justify-center mx-auto mb-4">
+                          <Lock className="w-6 h-6 text-rt-purple" />
+                        </div>
+                        <h4 className="text-lg font-semibold text-card-foreground mb-2">
+                          Desbloqueie o diagnóstico completo
+                        </h4>
+                        <p className="text-muted-foreground text-sm mb-4 max-w-md">
+                          Acesse a análise estratégica completa, plano de ação personalizado e reunião com especialista.
+                        </p>
+                        <Button 
+                          onClick={() => navigate("/compra")}
+                          className="bg-gradient-to-r from-rt-purple to-rt-dark-blue hover:opacity-90"
+                        >
+                          Desbloquear agora
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
