@@ -11,6 +11,7 @@ import Resultado from "./pages/Resultado";
 import CriarConta from "./pages/CriarConta";
 import DadosComplementares from "./pages/DadosComplementares";
 import Compra from "./pages/Compra";
+import CheckoutSuccess from "./pages/CheckoutSuccess";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/criar-conta" element={<CriarConta />} />
           <Route path="/dados-complementares" element={<DadosComplementares />} />
           <Route path="/compra" element={<Compra />} />
+          <Route path="/checkout-success" element={<CheckoutSuccess />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

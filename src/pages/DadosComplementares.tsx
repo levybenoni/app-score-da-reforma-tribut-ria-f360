@@ -66,6 +66,13 @@ const DadosComplementares = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Save complementary data
+    localStorage.setItem('rt-complementary-data', JSON.stringify(formData));
+    // Update user data with complete info
+    localStorage.setItem('rt-user-data', JSON.stringify({
+      nome: formData.nome,
+      email: formData.email
+    }));
     navigate("/compra");
   };
 

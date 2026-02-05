@@ -1,7 +1,30 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Lock, FileSearch, ClipboardCheck, TrendingUp, Target, FileDown, Users, ArrowRight } from "lucide-react";
 
 const Compra = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user has completed registration
+    const userData = localStorage.getItem('rt-user-data');
+    const complementaryData = localStorage.getItem('rt-complementary-data');
+    
+    if (!userData) {
+      // Redirect to criar conta with return intent
+      localStorage.setItem('rt-checkout-intent', 'true');
+      navigate('/criar-conta');
+      return;
+    }
+    
+    if (!complementaryData) {
+      // Redirect to dados complementares
+      localStorage.setItem('rt-checkout-intent', 'true');
+      navigate('/dados-complementares');
+      return;
+    }
+  }, [navigate]);
   const benefits = [
     {
       icon: <FileSearch className="w-5 h-5" />,
@@ -29,9 +52,40 @@ const Compra = () => {
     },
   ];
 
-  const handlePayment = () => {
-    // In production, this would redirect to a payment gateway
-    alert("Redirecionando para gateway de pagamento...");
+  const handlePayment = async () => {
+    const runId = localStorage.getItem('diagnosticRunId');
+    const userData = JSON.parse(localStorage.getItem('rt-user-data') || '{}');
+    
+    if (!runId) {
+      alert("Diagnóstico não encontrado. Por favor, complete o questionário primeiro.");
+      navigate('/');
+      return;
+    }
+
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          runId,
+          customerEmail: userData.email,
+          customerName: userData.nome,
+        },
+      });
+
+      if (error) {
+        console.error('Checkout error:', error);
+        alert('Erro ao iniciar o pagamento. Tente novamente.');
+        return;
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error('Payment error:', err);
+      alert('Erro ao processar o pagamento. Tente novamente.');
+    }
   };
 
   return (
