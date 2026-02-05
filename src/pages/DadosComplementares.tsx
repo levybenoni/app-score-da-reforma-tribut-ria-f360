@@ -10,10 +10,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowRight, User, Building2, Briefcase, Phone, Mail, DollarSign, FileText, Sparkles } from "lucide-react";
+import { ArrowRight, User, Building2, Briefcase, Phone, Mail, DollarSign, FileText, Sparkles, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const DadosComplementares = () => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [formData, setFormData] = useState({
     nome: "",
     empresa: "",
@@ -24,18 +28,52 @@ const DadosComplementares = () => {
     regime: "",
   });
 
-  // Load saved data from previous screen
+  // Check authentication and load saved data
   useEffect(() => {
-    const savedData = localStorage.getItem('rt-user-data');
-    if (savedData) {
-      const parsed = JSON.parse(savedData);
+    const checkAuth = async () => {
+      setIsCheckingAuth(true);
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        localStorage.setItem('rt-checkout-intent', 'true');
+        navigate('/criar-conta');
+        return;
+      }
+
+      // Pre-fill with user data from auth
       setFormData(prev => ({
         ...prev,
-        nome: parsed.nome || "",
-        email: parsed.email || ""
+        nome: session.user.user_metadata?.nome || "",
+        email: session.user.email || ""
       }));
-    }
-  }, []);
+
+      // Load any saved complementary data
+      const savedData = localStorage.getItem('rt-complementary-data');
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        setFormData(prev => ({
+          ...prev,
+          ...parsed,
+          nome: session.user.user_metadata?.nome || parsed.nome || prev.nome,
+          email: session.user.email || parsed.email || prev.email
+        }));
+      }
+
+      setIsCheckingAuth(false);
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session && !isCheckingAuth) {
+        navigate('/criar-conta');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const formatWhatsApp = (value: string) => {
     const digits = value.replace(/\D/g, '');
@@ -64,16 +102,43 @@ const DadosComplementares = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Save complementary data
-    localStorage.setItem('rt-complementary-data', JSON.stringify(formData));
-    // Update user data with complete info
-    localStorage.setItem('rt-user-data', JSON.stringify({
-      nome: formData.nome,
-      email: formData.email
-    }));
-    navigate("/compra");
+    setIsLoading(true);
+
+    try {
+      // Get current user
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("Sessão expirada. Faça login novamente.");
+        navigate('/criar-conta');
+        return;
+      }
+
+      // Update the diagnosticRun with complementary data
+      const runId = localStorage.getItem('diagnosticRunId');
+      if (runId) {
+        await supabase
+          .from('diagnosticRuns')
+          .update({ 
+            leadEmail: formData.email,
+            leadNome: formData.nome
+          })
+          .eq('id', runId);
+      }
+
+      // Save complementary data
+      localStorage.setItem('rt-complementary-data', JSON.stringify(formData));
+      
+      toast.success("Dados salvos com sucesso!");
+      navigate("/compra");
+    } catch (err) {
+      console.error("Error saving data:", err);
+      toast.error("Erro ao salvar dados. Tente novamente.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isFormValid = 
@@ -83,6 +148,14 @@ const DadosComplementares = () => {
     formData.email &&
     formData.faturamento &&
     formData.regime;
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-rt-gradient flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-white animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-rt-gradient flex items-center justify-center px-4 py-8 relative overflow-hidden">
@@ -137,6 +210,7 @@ const DadosComplementares = () => {
                     placeholder="Seu nome completo"
                     value={formData.nome}
                     onChange={handleChange}
+                    disabled={isLoading}
                     className="pl-14 h-14 input-premium rounded-xl text-base"
                   />
                 </div>
@@ -159,6 +233,7 @@ const DadosComplementares = () => {
                       placeholder="Razão social"
                       value={formData.empresa}
                       onChange={handleChange}
+                      disabled={isLoading}
                       className="pl-14 h-14 input-premium rounded-xl text-base"
                     />
                   </div>
@@ -179,6 +254,7 @@ const DadosComplementares = () => {
                       placeholder="Ex: Diretor Financeiro"
                       value={formData.cargo}
                       onChange={handleChange}
+                      disabled={isLoading}
                       className="pl-14 h-14 input-premium rounded-xl text-base"
                     />
                   </div>
@@ -202,6 +278,7 @@ const DadosComplementares = () => {
                       placeholder="(11) 99999-9999"
                       value={formData.whatsapp}
                       onChange={handleChange}
+                      disabled={isLoading}
                       className="pl-14 h-14 input-premium rounded-xl text-base"
                     />
                   </div>
@@ -222,7 +299,9 @@ const DadosComplementares = () => {
                       placeholder="seu@email.com"
                       value={formData.email}
                       onChange={handleChange}
-                      className="pl-14 h-14 input-premium rounded-xl text-base"
+                      disabled={isLoading}
+                      className="pl-14 h-14 input-premium rounded-xl text-base bg-muted/50"
+                      readOnly
                     />
                   </div>
                 </div>
@@ -241,6 +320,7 @@ const DadosComplementares = () => {
                     <Select
                       value={formData.faturamento}
                       onValueChange={(value) => handleSelectChange("faturamento", value)}
+                      disabled={isLoading}
                     >
                       <SelectTrigger className="pl-14 h-14 input-premium rounded-xl text-base">
                         <SelectValue placeholder="Selecione a faixa" />
@@ -267,6 +347,7 @@ const DadosComplementares = () => {
                     <Select
                       value={formData.regime}
                       onValueChange={(value) => handleSelectChange("regime", value)}
+                      disabled={isLoading}
                     >
                       <SelectTrigger className="pl-14 h-14 input-premium rounded-xl text-base">
                         <SelectValue placeholder="Selecione o regime" />
@@ -284,12 +365,21 @@ const DadosComplementares = () => {
               <div className="pt-4">
                 <Button
                   type="submit"
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || isLoading}
                   className="w-full btn-premium text-white font-semibold text-lg py-6 h-auto rounded-2xl group disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <span className="relative z-10 flex items-center justify-center">
-                    Continuar para pagamento
-                    <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        Continuar para pagamento
+                        <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
                   </span>
                 </Button>
               </div>
