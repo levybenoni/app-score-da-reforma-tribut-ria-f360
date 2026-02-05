@@ -118,55 +118,40 @@ export type Database = {
       }
       diagnosticRuns: {
         Row: {
-          cargoUsuario: string | null
           concluidoEm: string | null
           criadoEm: string
-          faturamentoAnual: string | null
           id: string
           ipHash: string | null
           leadEmail: string | null
           leadNome: string | null
-          leadWhatsapp: string | null
-          nomeEmpresa: string | null
           publicToken: string
           questionnaireVersionId: string
-          regimeTributario: string | null
           status: string
           userAgent: string | null
           usuarioId: string | null
         }
         Insert: {
-          cargoUsuario?: string | null
           concluidoEm?: string | null
           criadoEm?: string
-          faturamentoAnual?: string | null
           id?: string
           ipHash?: string | null
           leadEmail?: string | null
           leadNome?: string | null
-          leadWhatsapp?: string | null
-          nomeEmpresa?: string | null
           publicToken: string
           questionnaireVersionId: string
-          regimeTributario?: string | null
           status?: string
           userAgent?: string | null
           usuarioId?: string | null
         }
         Update: {
-          cargoUsuario?: string | null
           concluidoEm?: string | null
           criadoEm?: string
-          faturamentoAnual?: string | null
           id?: string
           ipHash?: string | null
           leadEmail?: string | null
           leadNome?: string | null
-          leadWhatsapp?: string | null
-          nomeEmpresa?: string | null
           publicToken?: string
           questionnaireVersionId?: string
-          regimeTributario?: string | null
           status?: string
           userAgent?: string | null
           usuarioId?: string | null

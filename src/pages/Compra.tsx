@@ -11,91 +11,35 @@ const Compra = () => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    const checkAuthAndData = async () => {
+    const checkAuth = async () => {
       setIsCheckingAuth(true);
       
-      // First check if we have a diagnostic to work with
-      const publicToken = localStorage.getItem('rt-public-token');
-      const runId = localStorage.getItem('diagnosticRunId');
-      
-      if (!publicToken && !runId) {
-        toast.error("Diagnóstico não encontrado. Inicie um novo.");
-        navigate('/orientacoes');
-        return;
-      }
-
       // Check if user is authenticated
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        // Not authenticated - redirect to criar conta immediately
-        // Don't try to do anything else - just redirect
+        // Redirect to criar conta with return intent
         localStorage.setItem('rt-checkout-intent', 'true');
         navigate('/criar-conta');
         return;
       }
 
-      // User is authenticated - now we need to claim the run and check profile
-      if (!publicToken) {
-        // No publicToken but user is logged in - this shouldn't happen in normal flow
-        // Try to check if run is already linked to this user
-        const { data: run, error } = await supabase
-          .from('diagnosticRuns')
-          .select('nomeEmpresa, cargoUsuario, faturamentoAnual, regimeTributario')
-          .eq('id', runId)
-          .eq('usuarioId', session.user.id)
-          .maybeSingle();
-
-        if (error || !run) {
-          toast.error("Diagnóstico não encontrado. Inicie um novo.");
-          navigate('/orientacoes');
-          return;
-        }
-
-        const isProfileComplete = !!(run.nomeEmpresa && run.cargoUsuario && run.faturamentoAnual && run.regimeTributario);
-        if (!isProfileComplete) {
-          localStorage.setItem('rt-checkout-intent', 'true');
-          navigate('/dados-complementares');
-          return;
-        }
-
-        setIsCheckingAuth(false);
-        return;
-      }
-
-      // We have publicToken - claim the run
-      const { data: claimData, error: claimError } = await supabase.functions.invoke('claimRun', {
-        body: { 
-          publicToken,
-          leadNome: session.user.user_metadata?.nome,
-          leadEmail: session.user.email
-        }
-      });
-      
-      if (claimError) {
-        console.error('Error claiming run:', claimError);
-        toast.error("Erro ao vincular diagnóstico. Tente novamente.");
-        navigate('/orientacoes');
-        return;
-      }
-
-      // claimRun returns isProfileComplete - use it
-      if (claimData?.isProfileComplete === false) {
+      // Check if complementary data exists
+      const complementaryData = localStorage.getItem('rt-complementary-data');
+      if (!complementaryData) {
         localStorage.setItem('rt-checkout-intent', 'true');
         navigate('/dados-complementares');
         return;
       }
-      
-      // Profile is complete (or claimRun said so) - proceed to checkout
+
       setIsCheckingAuth(false);
     };
 
-    checkAuthAndData();
+    checkAuth();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session && !isCheckingAuth) {
-        localStorage.setItem('rt-checkout-intent', 'true');
         navigate('/criar-conta');
       }
     });
@@ -147,22 +91,7 @@ const Compra = () => {
       
       if (!session?.user) {
         toast.error("Você precisa estar logado para continuar.");
-        localStorage.setItem('rt-checkout-intent', 'true');
         navigate('/criar-conta');
-        return;
-      }
-
-      // Double-check complementary data before proceeding
-      const { data: run } = await supabase
-        .from('diagnosticRuns')
-        .select('nomeEmpresa, cargoUsuario, faturamentoAnual, regimeTributario')
-        .eq('id', runId)
-        .eq('usuarioId', session.user.id)
-        .single();
-
-      if (!run || !run.nomeEmpresa || !run.cargoUsuario || !run.faturamentoAnual || !run.regimeTributario) {
-        toast.error("Complete seus dados antes de prosseguir.");
-        navigate('/dados-complementares');
         return;
       }
 
@@ -171,7 +100,7 @@ const Compra = () => {
           runId,
           customerEmail: session.user.email,
           customerName: session.user.user_metadata?.nome || session.user.email?.split('@')[0],
-          userId: session.user.id,
+          userId: session.user.id, // Pass the Supabase user ID
         },
       });
 

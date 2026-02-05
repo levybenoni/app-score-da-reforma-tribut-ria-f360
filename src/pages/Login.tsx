@@ -21,57 +21,26 @@ const Login = () => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        await handlePostLogin(session);
+        redirectToLatestDiagnostic(session.user.id);
       }
     };
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
-        await handlePostLogin(session);
+        redirectToLatestDiagnostic(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const handlePostLogin = async (session: { user: { id: string; email?: string }; access_token: string }) => {
+  const redirectToLatestDiagnostic = async (userId: string) => {
     try {
-      const userId = session.user.id;
-      const publicToken = localStorage.getItem('rt-public-token');
-      
-      // If there's a publicToken from an anonymous session, try to claim it
-      if (publicToken) {
-        console.log('Attempting to claim diagnostic run with publicToken:', publicToken);
-        
-        const { data: claimData, error: claimError } = await supabase.functions.invoke('claimRun', {
-          body: { 
-            publicToken,
-            leadEmail: session.user.email 
-          }
-        });
-
-        if (claimError) {
-          console.error('Error claiming run:', claimError);
-        } else if (claimData?.runId) {
-          console.log('Successfully claimed/verified run:', claimData.runId);
-          localStorage.setItem('diagnosticRunId', claimData.runId);
-          
-          // Check if profile is complete based on claimRun response
-          if (claimData.isProfileComplete) {
-            navigate('/resultado');
-            return;
-          } else {
-            navigate('/dados-complementares');
-            return;
-          }
-        }
-      }
-
-      // If no publicToken or claim failed, look for existing runs for this user
+      // Find the most recent diagnostic run for this user
       const { data: runs, error } = await supabase
         .from('diagnosticRuns')
-        .select('id, publicToken, nomeEmpresa, cargoUsuario, faturamentoAnual, regimeTributario')
+        .select('id, publicToken')
         .eq('usuarioId', userId)
         .order('criadoEm', { ascending: false })
         .limit(1);
@@ -79,25 +48,17 @@ const Login = () => {
       if (error) throw error;
 
       if (runs && runs.length > 0) {
-        const run = runs[0];
-        localStorage.setItem('diagnosticRunId', run.id);
-        localStorage.setItem('rt-public-token', run.publicToken);
-        
-        // Check if complementary data is complete
-        const isProfileComplete = !!(run.nomeEmpresa && run.cargoUsuario && run.faturamentoAnual && run.regimeTributario);
-        
-        if (isProfileComplete) {
-          navigate('/resultado');
-        } else {
-          navigate('/dados-complementares');
-        }
+        // Store the run ID and navigate to result
+        localStorage.setItem('diagnosticRunId', runs[0].id);
+        localStorage.setItem('rt-public-token', runs[0].publicToken);
+        navigate('/resultado');
       } else {
         // No diagnostic found, go to start
         toast.info("Nenhum diagnóstico encontrado. Inicie um novo!");
         navigate('/orientacoes');
       }
     } catch (err) {
-      console.error("Error in post-login flow:", err);
+      console.error("Error fetching diagnostic:", err);
       navigate('/orientacoes');
     }
   };

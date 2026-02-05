@@ -41,46 +41,25 @@ const DadosComplementares = () => {
         return;
       }
 
-      // Check if there's a run for this user with complementary data
-      const runId = localStorage.getItem('diagnosticRunId');
-      
-      if (runId) {
-        const { data: run } = await supabase
-          .from('diagnosticRuns')
-          .select('nomeEmpresa, cargoUsuario, leadWhatsapp, faturamentoAnual, regimeTributario, leadNome, leadEmail')
-          .eq('id', runId)
-          .eq('usuarioId', session.user.id)
-          .single();
-
-        if (run) {
-          // Check if profile is already complete
-          const isComplete = run.nomeEmpresa && run.cargoUsuario && run.faturamentoAnual && run.regimeTributario;
-          
-          if (isComplete) {
-            // User already has complete data, skip to result
-            navigate('/resultado');
-            return;
-          }
-
-          // Pre-fill with existing data
-          setFormData(prev => ({
-            ...prev,
-            nome: run.leadNome || session.user.user_metadata?.nome || "",
-            email: run.leadEmail || session.user.email || "",
-            empresa: run.nomeEmpresa || "",
-            cargo: run.cargoUsuario || "",
-            whatsapp: run.leadWhatsapp || "",
-            faturamento: run.faturamentoAnual || "",
-            regime: run.regimeTributario || ""
-          }));
-        } else {
-          // Pre-fill with user data from auth only
-          setFormData(prev => ({
-            ...prev,
-            nome: session.user.user_metadata?.nome || "",
-            email: session.user.email || ""
-          }));
+      // Check if complementary data already exists and is complete
+      const savedData = localStorage.getItem('rt-complementary-data');
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        const isComplete = parsed.empresa && parsed.cargo && parsed.faturamento && parsed.regime;
+        
+        if (isComplete) {
+          // User already has complete data, skip to payment
+          navigate('/compra');
+          return;
         }
+        
+        // Load partial data
+        setFormData(prev => ({
+          ...prev,
+          ...parsed,
+          nome: session.user.user_metadata?.nome || parsed.nome || prev.nome,
+          email: session.user.email || parsed.email || prev.email
+        }));
       } else {
         // Pre-fill with user data from auth only
         setFormData(prev => ({
@@ -146,43 +125,23 @@ const DadosComplementares = () => {
         return;
       }
 
-      // Get runId from localStorage
+      // Update the diagnosticRun with complementary data
       const runId = localStorage.getItem('diagnosticRunId');
-      
-      if (!runId) {
-        toast.error("Diagnóstico não encontrado. Inicie um novo.");
-        navigate('/orientacoes');
-        return;
+      if (runId) {
+        await supabase
+          .from('diagnosticRuns')
+          .update({ 
+            leadEmail: formData.email,
+            leadNome: formData.nome
+          })
+          .eq('id', runId);
       }
 
-      // Update the diagnosticRun with ALL complementary data in Supabase
-      const { error: updateError } = await supabase
-        .from('diagnosticRuns')
-        .update({ 
-          leadEmail: formData.email,
-          leadNome: formData.nome,
-          leadWhatsapp: formData.whatsapp,
-          nomeEmpresa: formData.empresa,
-          cargoUsuario: formData.cargo,
-          regimeTributario: formData.regime,
-          faturamentoAnual: formData.faturamento
-        })
-        .eq('id', runId)
-        .eq('usuarioId', session.user.id);
-
-      if (updateError) {
-        console.error('Error updating diagnostic run:', updateError);
-        toast.error("Erro ao salvar dados. Tente novamente.");
-        return;
-      }
-
-      // Also save to localStorage as backup
+      // Save complementary data
       localStorage.setItem('rt-complementary-data', JSON.stringify(formData));
       
       toast.success("Dados salvos com sucesso!");
-      
-      // Redirect to RESULTADO (not compra)
-      navigate("/resultado");
+      navigate("/compra");
     } catch (err) {
       console.error("Error saving data:", err);
       toast.error("Erro ao salvar dados. Tente novamente.");
@@ -376,11 +335,11 @@ const DadosComplementares = () => {
                         <SelectValue placeholder="Selecione a faixa" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
-                        <SelectItem value="0 - 360 mil" className="rounded-lg">0 a 360 mil</SelectItem>
-                        <SelectItem value="361 - 4.800" className="rounded-lg">361 mil a 4.800.000</SelectItem>
-                        <SelectItem value="4.800 a 10 milhões" className="rounded-lg">4.800.001 a 10 milhões</SelectItem>
-                        <SelectItem value="10 a 40 milhões" className="rounded-lg">10 a 40 milhões</SelectItem>
-                        <SelectItem value="+40 milhões" className="rounded-lg">Acima de 40 milhões</SelectItem>
+                        <SelectItem value="0-360k" className="rounded-lg">0 a 360 mil</SelectItem>
+                        <SelectItem value="361k-4.8m" className="rounded-lg">361 mil a 4.800.000</SelectItem>
+                        <SelectItem value="4.8m-10m" className="rounded-lg">4.800.001 a 10 milhões</SelectItem>
+                        <SelectItem value="10m-40m" className="rounded-lg">10 a 40 milhões</SelectItem>
+                        <SelectItem value="40m+" className="rounded-lg">Acima de 40 milhões</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -403,9 +362,9 @@ const DadosComplementares = () => {
                         <SelectValue placeholder="Selecione o regime" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
-                        <SelectItem value="Simples Nacional" className="rounded-lg">Simples Nacional</SelectItem>
-                        <SelectItem value="Lucro Presumido" className="rounded-lg">Lucro Presumido</SelectItem>
-                        <SelectItem value="Lucro Real" className="rounded-lg">Lucro Real</SelectItem>
+                        <SelectItem value="simples" className="rounded-lg">Simples Nacional</SelectItem>
+                        <SelectItem value="presumido" className="rounded-lg">Lucro Presumido</SelectItem>
+                        <SelectItem value="real" className="rounded-lg">Lucro Real</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -426,7 +385,7 @@ const DadosComplementares = () => {
                       </>
                     ) : (
                       <>
-                        Ver meu resultado
+                        Continuar para pagamento
                         <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
                       </>
                     )}

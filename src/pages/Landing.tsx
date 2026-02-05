@@ -43,24 +43,23 @@ const Landing = () => {
             <span className="font-semibold">competitividade</span>.
           </p>
 
-          {/* CTA Buttons Container */}
-          <div className="flex flex-col items-center gap-4">
-            <Button 
-              onClick={() => navigate("/orientacoes")}
-              size="lg"
-              className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 font-medium text-base md:text-lg px-8 py-6 h-auto rounded-full border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 group"
-            >
-              Iniciar diagnóstico agora
-              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
+          {/* CTA Button */}
+          <Button 
+            onClick={() => navigate("/orientacoes")}
+            size="lg"
+            className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 font-medium text-base md:text-lg px-8 py-6 h-auto rounded-full border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 group"
+          >
+            Iniciar diagnóstico agora
+            <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+          </Button>
 
-            <button
-              onClick={() => navigate("/login")}
-              className="text-white/70 hover:text-white text-sm font-medium transition-colors duration-200 underline-offset-4 hover:underline"
-            >
-              Já possuo cadastro
-            </button>
-          </div>
+          {/* Secondary Login Button */}
+          <button
+            onClick={() => navigate("/login")}
+            className="mt-4 text-white/70 hover:text-white text-sm font-medium transition-colors duration-200 underline-offset-4 hover:underline"
+          >
+            Já possuo cadastro
+          </button>
         </div>
 
         {/* Feature Cards */}
