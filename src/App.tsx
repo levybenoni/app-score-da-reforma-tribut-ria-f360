@@ -9,6 +9,7 @@ import Questionario from "./pages/Questionario";
 import Loading from "./pages/Loading";
 import Resultado from "./pages/Resultado";
 import CriarConta from "./pages/CriarConta";
+import Login from "./pages/Login";
 import DadosComplementares from "./pages/DadosComplementares";
 import Compra from "./pages/Compra";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/loading" element={<Loading />} />
           <Route path="/resultado" element={<Resultado />} />
           <Route path="/criar-conta" element={<CriarConta />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/dados-complementares" element={<DadosComplementares />} />
           <Route path="/compra" element={<Compra />} />
           <Route path="/checkout-success" element={<CheckoutSuccess />} />

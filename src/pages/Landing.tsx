@@ -52,6 +52,14 @@ const Landing = () => {
             Iniciar diagnóstico agora
             <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
           </Button>
+
+          {/* Secondary Login Button */}
+          <button
+            onClick={() => navigate("/login")}
+            className="mt-4 text-white/70 hover:text-white text-sm font-medium transition-colors duration-200 underline-offset-4 hover:underline"
+          >
+            Já possuo cadastro
+          </button>
         </div>
 
         {/* Feature Cards */}

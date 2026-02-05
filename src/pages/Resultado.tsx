@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, DollarSign, Link2, Scale, Sparkles, Loader2, AlertTriangle, Lock, Download, Calendar, MessageCircle } from "lucide-react";
+import { FileText, DollarSign, Link2, Scale, Sparkles, Loader2, AlertTriangle, Lock, Download } from "lucide-react";
 import { useDiagnosticResult } from "@/hooks/useDiagnosticResult";
+import ContactSections from "@/components/ContactSections";
 
 const blockIconMap: Record<string, React.ReactNode> = {
   "FISCAL_CREDITO": <FileText className="w-5 h-5" />,
@@ -20,6 +21,10 @@ const blockNameMap: Record<string, string> = {
 const Resultado = () => {
   const navigate = useNavigate();
   const { result, htmlReport, isPremium, isLoading, error } = useDiagnosticResult();
+
+  const handleScheduleClick = () => {
+    window.open('https://calendly.com/bwaglobal/diagnostico-reforma-tributaria', '_blank');
+  };
 
   const overallScore = result?.percentualGeral ?? 0;
   const maturityLevel = result?.nivelMaturidadeGeral?.toLowerCase() ?? "intermediaria";
@@ -160,27 +165,16 @@ const Resultado = () => {
                     Diagnóstico Detalhado
                   </h3>
                   
-                  {/* Premium Action Buttons */}
+                  {/* Premium Action Button */}
                   {isPremium && (
-                    <div className="flex gap-3">
-                      <Button
-                        onClick={() => window.print()}
-                        variant="outline"
-                        size="sm"
-                        className="gap-2"
-                      >
-                        <Download className="w-4 h-4" />
-                        Exportar PDF
-                      </Button>
-                      <Button
-                        onClick={() => window.open('https://calendly.com/bwaglobal/diagnostico-reforma-tributaria', '_blank')}
-                        size="sm"
-                        className="gap-2 bg-rt-purple hover:bg-rt-purple/90"
-                      >
-                        <Calendar className="w-4 h-4" />
-                        Agendar Reunião
-                      </Button>
-                    </div>
+                    <Button
+                      onClick={() => window.print()}
+                      size="sm"
+                      className="gap-2 bg-rt-purple hover:bg-rt-purple/90 text-white shadow-md hover:shadow-lg hover:shadow-rt-purple/30 transition-all duration-300"
+                    >
+                      <Download className="w-4 h-4" />
+                      Exportar PDF
+                    </Button>
                   )}
                 </div>
                 
@@ -225,54 +219,8 @@ const Resultado = () => {
                     </div>
                   )}
                 </div>
-
-                {/* Premium footer actions */}
-                {isPremium && (
-                  <div className="mt-8 p-6 bg-gradient-to-r from-rt-purple/5 to-rt-dark-blue/5 rounded-2xl border border-rt-purple/10">
-                    <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-                      <div>
-                        <h4 className="font-semibold text-card-foreground mb-1">
-                          Precisa de suporte adicional?
-                        </h4>
-                        <p className="text-muted-foreground text-sm">
-                          Nossa equipe está pronta para ajudar com sua implementação.
-                        </p>
-                      </div>
-                      <div className="flex gap-3">
-                        <Button
-                          onClick={() => window.open('https://wa.me/551132314580', '_blank')}
-                          variant="outline"
-                          className="gap-2"
-                        >
-                          <MessageCircle className="w-4 h-4" />
-                          WhatsApp
-                        </Button>
-                        <Button
-                          onClick={() => window.open('https://calendly.com/bwaglobal/diagnostico-reforma-tributaria', '_blank')}
-                          className="gap-2 bg-rt-dark-blue hover:bg-rt-dark-blue/90"
-                        >
-                          <Calendar className="w-4 h-4" />
-                          Agendar com Especialista
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Free user WhatsApp link */}
-                {!isPremium && (
-                  <div className="mt-6 text-center">
-                    <a 
-                      href="https://wa.me/551132314580" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-muted-foreground hover:text-rt-purple transition-colors text-sm"
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      Falar com a BWA Global pelo WhatsApp
-                    </a>
-                  </div>
-                )}
+                {/* Contact Sections - Always visible at the end */}
+                <ContactSections isPremium={isPremium} onScheduleClick={handleScheduleClick} />
               </div>
             )}
           </div>

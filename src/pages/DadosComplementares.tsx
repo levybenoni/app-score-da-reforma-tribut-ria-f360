@@ -41,22 +41,31 @@ const DadosComplementares = () => {
         return;
       }
 
-      // Pre-fill with user data from auth
-      setFormData(prev => ({
-        ...prev,
-        nome: session.user.user_metadata?.nome || "",
-        email: session.user.email || ""
-      }));
-
-      // Load any saved complementary data
+      // Check if complementary data already exists and is complete
       const savedData = localStorage.getItem('rt-complementary-data');
       if (savedData) {
         const parsed = JSON.parse(savedData);
+        const isComplete = parsed.empresa && parsed.cargo && parsed.faturamento && parsed.regime;
+        
+        if (isComplete) {
+          // User already has complete data, skip to payment
+          navigate('/compra');
+          return;
+        }
+        
+        // Load partial data
         setFormData(prev => ({
           ...prev,
           ...parsed,
           nome: session.user.user_metadata?.nome || parsed.nome || prev.nome,
           email: session.user.email || parsed.email || prev.email
+        }));
+      } else {
+        // Pre-fill with user data from auth only
+        setFormData(prev => ({
+          ...prev,
+          nome: session.user.user_metadata?.nome || "",
+          email: session.user.email || ""
         }));
       }
 
