@@ -136,13 +136,18 @@ const DadosComplementares = () => {
       // First, ensure the run is claimed by this user (in case it wasn't done in signup)
       const publicToken = localStorage.getItem('diagnosticPublicToken');
       if (publicToken) {
-        await supabase.functions.invoke('claimRun', {
+        const { error: claimError } = await supabase.functions.invoke('claimRun', {
           body: { publicToken }
         });
+        
+        if (claimError) {
+          console.error("Error claiming run:", claimError);
+        }
       }
 
       // Update the diagnosticRun with ALL complementary data
-      const { error: updateError } = await supabase
+      // Use .select() to verify the update succeeded
+      const { data: updatedData, error: updateError } = await supabase
         .from('diagnosticRuns')
         .update({ 
           leadNome: formData.nome,
@@ -154,11 +159,18 @@ const DadosComplementares = () => {
           faturamentoAnual: formData.faturamento
         })
         .eq('id', runId)
-        .eq('usuarioId', session.user.id);
+        .select();
 
       if (updateError) {
         console.error("Error updating diagnosticRun:", updateError);
         toast.error("Erro ao salvar dados. Tente novamente.");
+        return;
+      }
+
+      // Check if any row was actually updated
+      if (!updatedData || updatedData.length === 0) {
+        console.error("No rows updated - run may not belong to this user");
+        toast.error("Não foi possível salvar os dados. Verifique seu diagnóstico.");
         return;
       }
 
