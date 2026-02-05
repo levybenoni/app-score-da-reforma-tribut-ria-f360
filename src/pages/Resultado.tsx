@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, DollarSign, Link2, Scale, Sparkles, Loader2, AlertTriangle, Lock } from "lucide-react";
 import { useDiagnosticResult } from "@/hooks/useDiagnosticResult";
@@ -20,16 +19,7 @@ const blockNameMap: Record<string, string> = {
 
 const Resultado = () => {
   const navigate = useNavigate();
-  const { result, isPremium, isLoading, error } = useDiagnosticResult();
-  const [htmlReport, setHtmlReport] = useState<string | null>(null);
-
-  // Load raw HTML report from localStorage
-  useEffect(() => {
-    const storedHtml = localStorage.getItem('diagnosticHtmlReport');
-    if (storedHtml) {
-      setHtmlReport(storedHtml);
-    }
-  }, []);
+  const { result, htmlReport, isPremium, isLoading, error } = useDiagnosticResult();
 
   const overallScore = result?.percentualGeral ?? 0;
   const maturityLevel = result?.nivelMaturidadeGeral?.toLowerCase() ?? "intermediaria";

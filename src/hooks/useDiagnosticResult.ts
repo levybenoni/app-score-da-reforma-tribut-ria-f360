@@ -24,12 +24,14 @@ interface AIReport {
   runId: string;
   tipoRelatorio: string;
   conteudoMarkdown: string;
+  conteudoHtml: string | null;
   criadoEm: string;
 }
 
 export function useDiagnosticResult() {
   const [result, setResult] = useState<DiagnosticResult | null>(null);
   const [report, setReport] = useState<AIReport | null>(null);
+  const [htmlReport, setHtmlReport] = useState<string | null>(null);
   const [isPremium, setIsPremium] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +113,10 @@ export function useDiagnosticResult() {
 
       if (reportData) {
         setReport(reportData);
+        // Use conteudoHtml as the source of truth for the HTML report
+        if (reportData.conteudoHtml) {
+          setHtmlReport(reportData.conteudoHtml);
+        }
       }
 
       // Check entitlements for premium status
@@ -141,6 +147,7 @@ export function useDiagnosticResult() {
   return {
     result,
     report,
+    htmlReport,
     isPremium,
     isLoading,
     error,

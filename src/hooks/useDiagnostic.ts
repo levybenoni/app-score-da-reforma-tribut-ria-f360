@@ -134,7 +134,8 @@ export function useDiagnostic() {
     return response.data;
   }, [waitForPendingSaves]);
 
-  // Call external webhook and store raw HTML response
+  // Call external webhook - waits for processing to complete (HTTP 200)
+  // The actual HTML is fetched from Supabase aiReports table
   const callWebhook = useCallback(async () => {
     const runId = localStorage.getItem(RUN_ID_KEY);
     
@@ -154,13 +155,9 @@ export function useDiagnostic() {
       throw new Error(`Webhook failed: ${response.status}`);
     }
 
-    // Get raw HTML response (NOT JSON)
-    const htmlContent = await response.text();
-    
-    // Store the raw HTML in localStorage for the result page
-    localStorage.setItem('diagnosticHtmlReport', htmlContent);
-
-    return htmlContent;
+    // HTTP 200 signals processing is complete
+    // HTML report will be fetched from Supabase aiReports table
+    return true;
   }, []);
 
   // Claim run for authenticated user
