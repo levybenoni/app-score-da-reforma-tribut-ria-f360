@@ -14,17 +14,25 @@ const Compra = () => {
     const checkAuth = async () => {
       setIsCheckingAuth(true);
       
-      // Check if user is authenticated
+      // FIRST: Check if user is authenticated - redirect to criar-conta if not
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        // Redirect to criar conta with return intent
+        // Not authenticated - redirect to criar conta with return intent
         localStorage.setItem('rt-checkout-intent', 'true');
         navigate('/criar-conta');
         return;
       }
 
-      // Check if complementary data exists
+      // SECOND: Check if there's a diagnostic run - only after auth is confirmed
+      const runId = localStorage.getItem('diagnosticRunId');
+      if (!runId) {
+        toast.error("Diagnóstico não encontrado. Por favor, complete o questionário primeiro.");
+        navigate('/');
+        return;
+      }
+
+      // THIRD: Check if complementary data exists
       const complementaryData = localStorage.getItem('rt-complementary-data');
       if (!complementaryData) {
         localStorage.setItem('rt-checkout-intent', 'true');
