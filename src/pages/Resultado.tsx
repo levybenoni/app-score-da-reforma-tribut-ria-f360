@@ -19,7 +19,7 @@ const blockNameMap: Record<string, string> = {
 
 const Resultado = () => {
   const navigate = useNavigate();
-  const { result, htmlReport, isPremium, isLoading, isLoadingHtml, error } = useDiagnosticResult();
+  const { result, htmlReport, isPremium, isLoading, error } = useDiagnosticResult();
 
   const overallScore = result?.percentualGeral ?? 0;
   const maturityLevel = result?.nivelMaturidadeGeral?.toLowerCase() ?? "intermediaria";
@@ -80,10 +80,10 @@ const Resultado = () => {
         </div>
 
         {/* Main Card */}
-        <div className="glass-card-floating rounded-3xl overflow-hidden animate-fade-in-up delay-100 flex flex-col flex-1" style={{ animationFillMode: 'backwards' }}>
+        <div className="glass-card-floating rounded-3xl overflow-hidden animate-fade-in-up delay-100" style={{ animationFillMode: 'backwards' }}>
           <div className="h-1 bg-gradient-to-r from-rt-purple via-rt-dark-blue to-rt-light-blue" />
 
-          <div className="p-6 lg:p-10 flex flex-col flex-1">
+          <div className="p-6 lg:p-10">
             {/* Header */}
             <div className="text-center mb-8">
               <h1 className="text-2xl lg:text-3xl font-bold text-card-foreground mb-2">
@@ -152,37 +152,24 @@ const Resultado = () => {
             </div>
 
             {/* Diagnóstico Detalhado Section - HTML from Supabase */}
-            {isLoadingHtml && !htmlReport && (
-              <div className="flex-1 flex flex-col mt-4 border-t border-border/30 pt-8">
-                <div className="flex items-center justify-center py-12">
-                  <div className="text-center">
-                    <Loader2 className="w-8 h-8 text-rt-purple animate-spin mx-auto mb-3" />
-                    <p className="text-muted-foreground text-sm">Finalizando análise do diagnóstico…</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {htmlReport && (
-              <div className="flex-1 flex flex-col mt-4 border-t border-border/30 pt-8">
+              <div className="mt-4 border-t border-border/30 pt-8">
                 <h3 className="font-semibold text-card-foreground mb-6 text-xl flex items-center gap-2">
                   <FileText className="w-5 h-5 text-rt-purple" />
                   Diagnóstico Detalhado
                 </h3>
                 
-                {/* Container wrapper - controls FREE vs PREMIUM access */}
+                {/* Container wrapper - controls FREE vs PREMIUM visual access */}
                 <div className={`diagnostico-wrapper relative ${!isPremium ? 'free' : ''}`}>
-                  {/* HTML content container */}
+                  {/* HTML content - rendered exactly as stored, no transformation */}
                   <div 
                     className={`diagnostico-html bg-white/50 rounded-2xl p-6 ${
-                      !isPremium 
-                        ? 'max-h-[1600px] overflow-hidden' 
-                        : ''
+                      !isPremium ? 'max-h-[1600px] overflow-hidden' : ''
                     }`}
                     dangerouslySetInnerHTML={{ __html: htmlReport }}
                   />
                   
-                  {/* Premium overlay for Free users - blocks access to content below */}
+                  {/* Premium overlay for Free users - visual blur starting at "Principais Riscos" */}
                   {!isPremium && (
                     <div 
                       className="absolute bottom-0 left-0 right-0 rounded-b-2xl flex flex-col items-center justify-end"

@@ -1,8 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-
-const MAX_RETRY_ATTEMPTS = 10;
-const RETRY_INTERVAL_MS = 500;
 
 interface BlockScore {
   blockId: string | null;
@@ -22,75 +19,12 @@ interface DiagnosticResult {
   blockScores: BlockScore[];
 }
 
-interface AIReport {
-  id: string;
-  runId: string;
-  tipoRelatorio: string;
-  conteudoMarkdown: string;
-  conteudoHtml: string | null;
-  criadoEm: string;
-}
-
 export function useDiagnosticResult() {
   const [result, setResult] = useState<DiagnosticResult | null>(null);
-  const [report, setReport] = useState<AIReport | null>(null);
   const [htmlReport, setHtmlReport] = useState<string | null>(null);
   const [isPremium, setIsPremium] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingHtml, setIsLoadingHtml] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const retryCountRef = useRef(0);
-
-  // Fetch HTML report with retry logic
-  const fetchHtmlReport = useCallback(async (runId: string): Promise<string | null> => {
-    const { data: reportData, error: reportError } = await supabase
-      .from('aiReports')
-      .select('*')
-      .eq('runId', runId)
-      .eq('tipoRelatorio', 'FREE_SUMMARY')
-      .maybeSingle();
-
-    if (reportError) {
-      console.error('Error loading report:', reportError);
-      return null;
-    }
-
-    if (reportData) {
-      setReport(reportData);
-      return reportData.conteudoHtml || null;
-    }
-
-    return null;
-  }, []);
-
-  // Retry mechanism for HTML report
-  const fetchHtmlWithRetry = useCallback(async (runId: string) => {
-    setIsLoadingHtml(true);
-    retryCountRef.current = 0;
-
-    const attemptFetch = async (): Promise<void> => {
-      const html = await fetchHtmlReport(runId);
-      
-      if (html) {
-        setHtmlReport(html);
-        setIsLoadingHtml(false);
-        retryCountRef.current = 0;
-        return;
-      }
-
-      retryCountRef.current += 1;
-      
-      if (retryCountRef.current < MAX_RETRY_ATTEMPTS) {
-        console.log(`HTML not available yet, retry ${retryCountRef.current}/${MAX_RETRY_ATTEMPTS}...`);
-        setTimeout(attemptFetch, RETRY_INTERVAL_MS);
-      } else {
-        console.log('Max retries reached for HTML report');
-        setIsLoadingHtml(false);
-      }
-    };
-
-    await attemptFetch();
-  }, [fetchHtmlReport]);
 
   const loadResult = useCallback(async () => {
     setIsLoading(true);
@@ -155,8 +89,21 @@ export function useDiagnosticResult() {
         blockScores,
       });
 
-      // Load AI report with retry mechanism (handles race condition with webhook)
-      fetchHtmlWithRetry(runId);
+      // Load AI report - single fetch (no retry needed, data already exists)
+      const { data: reportData, error: reportError } = await supabase
+        .from('aiReports')
+        .select('conteudoHtml')
+        .eq('runId', runId)
+        .eq('tipoRelatorio', 'FREE_SUMMARY')
+        .maybeSingle();
+
+      if (reportError) {
+        console.error('Error loading report:', reportError);
+      }
+
+      if (reportData?.conteudoHtml) {
+        setHtmlReport(reportData.conteudoHtml);
+      }
 
       // Check entitlements for premium status
       const { data: entitlementData, error: entitlementError } = await supabase
@@ -177,7 +124,7 @@ export function useDiagnosticResult() {
     } finally {
       setIsLoading(false);
     }
-  }, [fetchHtmlWithRetry]);
+  }, []);
 
   useEffect(() => {
     loadResult();
@@ -185,11 +132,9 @@ export function useDiagnosticResult() {
 
   return {
     result,
-    report,
     htmlReport,
     isPremium,
     isLoading,
-    isLoadingHtml,
     error,
     reload: loadResult,
   };
