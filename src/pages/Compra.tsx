@@ -11,35 +11,80 @@ const Compra = () => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuthAndData = async () => {
       setIsCheckingAuth(true);
       
       // Check if user is authenticated
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        // Redirect to criar conta with return intent
+        // Not authenticated - redirect to criar conta
         localStorage.setItem('rt-checkout-intent', 'true');
         navigate('/criar-conta');
         return;
       }
 
-      // Check if complementary data exists
-      const complementaryData = localStorage.getItem('rt-complementary-data');
-      if (!complementaryData) {
+      // Get runId from localStorage
+      const runId = localStorage.getItem('diagnosticRunId');
+      
+      if (!runId) {
+        toast.error("Diagnóstico não encontrado. Inicie um novo.");
+        navigate('/orientacoes');
+        return;
+      }
+
+      // Check if complementary data exists in Supabase (not localStorage)
+      const { data: run, error } = await supabase
+        .from('diagnosticRuns')
+        .select('nomeEmpresa, cargoUsuario, faturamentoAnual, regimeTributario, usuarioId')
+        .eq('id', runId)
+        .single();
+
+      if (error || !run) {
+        console.error('Error fetching run:', error);
+        toast.error("Diagnóstico não encontrado.");
+        navigate('/orientacoes');
+        return;
+      }
+
+      // Check if the run is linked to this user
+      if (run.usuarioId !== session.user.id) {
+        // Run exists but not linked to this user - try to claim it
+        const publicToken = localStorage.getItem('rt-public-token');
+        if (publicToken) {
+          const { data: claimData, error: claimError } = await supabase.functions.invoke('claimRun', {
+            body: { publicToken }
+          });
+          
+          if (claimError) {
+            console.error('Error claiming run:', claimError);
+            toast.error("Erro ao vincular diagnóstico.");
+            navigate('/orientacoes');
+            return;
+          }
+        }
+      }
+
+      // Check if complementary data is complete
+      const isProfileComplete = !!(run.nomeEmpresa && run.cargoUsuario && run.faturamentoAnual && run.regimeTributario);
+      
+      if (!isProfileComplete) {
+        // Missing complementary data - redirect to fill it
         localStorage.setItem('rt-checkout-intent', 'true');
         navigate('/dados-complementares');
         return;
       }
 
+      // All good - user can proceed to checkout
       setIsCheckingAuth(false);
     };
 
-    checkAuth();
+    checkAuthAndData();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session && !isCheckingAuth) {
+        localStorage.setItem('rt-checkout-intent', 'true');
         navigate('/criar-conta');
       }
     });
@@ -91,7 +136,22 @@ const Compra = () => {
       
       if (!session?.user) {
         toast.error("Você precisa estar logado para continuar.");
+        localStorage.setItem('rt-checkout-intent', 'true');
         navigate('/criar-conta');
+        return;
+      }
+
+      // Double-check complementary data before proceeding
+      const { data: run } = await supabase
+        .from('diagnosticRuns')
+        .select('nomeEmpresa, cargoUsuario, faturamentoAnual, regimeTributario')
+        .eq('id', runId)
+        .eq('usuarioId', session.user.id)
+        .single();
+
+      if (!run || !run.nomeEmpresa || !run.cargoUsuario || !run.faturamentoAnual || !run.regimeTributario) {
+        toast.error("Complete seus dados antes de prosseguir.");
+        navigate('/dados-complementares');
         return;
       }
 
@@ -100,7 +160,7 @@ const Compra = () => {
           runId,
           customerEmail: session.user.email,
           customerName: session.user.user_metadata?.nome || session.user.email?.split('@')[0],
-          userId: session.user.id, // Pass the Supabase user ID
+          userId: session.user.id,
         },
       });
 
