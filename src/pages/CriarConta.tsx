@@ -60,7 +60,7 @@ const CriarConta = () => {
         return;
       }
 
-      if (data.user) {
+      if (data.user && data.session) {
         // Save user data to localStorage for sync with next screen
         localStorage.setItem('rt-user-data', JSON.stringify({
           nome: formData.nome,
@@ -68,21 +68,40 @@ const CriarConta = () => {
           userId: data.user.id
         }));
 
-        // Update the diagnosticRun with the user ID
-        const runId = localStorage.getItem('diagnosticRunId');
-        if (runId) {
-          await supabase
-            .from('diagnosticRuns')
-            .update({ 
-              usuarioId: data.user.id,
-              leadEmail: formData.email,
-              leadNome: formData.nome
-            })
-            .eq('id', runId);
+        // Claim the diagnostic run using the edge function
+        const publicToken = localStorage.getItem('rt-public-token');
+        
+        if (publicToken) {
+          console.log('Claiming diagnostic run after signup...');
+          
+          const { data: claimData, error: claimError } = await supabase.functions.invoke('claimRun', {
+            body: { 
+              publicToken,
+              leadNome: formData.nome,
+              leadEmail: formData.email
+            }
+          });
+
+          if (claimError) {
+            console.error('Error claiming run:', claimError);
+          } else if (claimData?.runId) {
+            console.log('Successfully claimed run:', claimData.runId);
+            localStorage.setItem('diagnosticRunId', claimData.runId);
+            
+            // Check if profile is complete
+            if (claimData.isProfileComplete) {
+              toast.success("Conta criada com sucesso!");
+              navigate("/resultado");
+              return;
+            }
+          }
         }
 
         toast.success("Conta criada com sucesso!");
         navigate("/dados-complementares");
+      } else if (data.user && !data.session) {
+        // Email confirmation required
+        toast.success("Conta criada! Verifique seu e-mail para confirmar o cadastro.");
       }
     } catch (err) {
       console.error("Signup error:", err);
