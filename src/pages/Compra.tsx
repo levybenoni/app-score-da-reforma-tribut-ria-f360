@@ -14,17 +14,7 @@ const Compra = () => {
     const checkAuthAndData = async () => {
       setIsCheckingAuth(true);
       
-      // Check if user is authenticated
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        // Not authenticated - redirect to criar conta
-        localStorage.setItem('rt-checkout-intent', 'true');
-        navigate('/criar-conta');
-        return;
-      }
-
-      // Get publicToken and runId from localStorage
+      // First check if we have a diagnostic to work with
       const publicToken = localStorage.getItem('rt-public-token');
       const runId = localStorage.getItem('diagnosticRunId');
       
@@ -34,65 +24,69 @@ const Compra = () => {
         return;
       }
 
-      // FIRST: Try to claim the run (this links it to the user if not already linked)
-      // This is necessary because RLS requires usuarioId = auth.uid() for SELECT
-      if (publicToken) {
-        const { data: claimData, error: claimError } = await supabase.functions.invoke('claimRun', {
-          body: { 
-            publicToken,
-            leadNome: session.user.user_metadata?.nome,
-            leadEmail: session.user.email
-          }
-        });
-        
-        if (claimError) {
-          console.error('Error claiming run:', claimError);
-          toast.error("Erro ao vincular diagnóstico.");
-          navigate('/orientacoes');
-          return;
-        }
-
-        // If claim returns profile complete status, use it
-        if (claimData?.isProfileComplete === false) {
-          localStorage.setItem('rt-checkout-intent', 'true');
-          navigate('/dados-complementares');
-          return;
-        }
-        
-        if (claimData?.isProfileComplete === true) {
-          // All good - user can proceed to checkout
-          setIsCheckingAuth(false);
-          return;
-        }
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        // Not authenticated - redirect to criar conta immediately
+        // Don't try to do anything else - just redirect
+        localStorage.setItem('rt-checkout-intent', 'true');
+        navigate('/criar-conta');
+        return;
       }
 
-      // Fallback: Query the run directly (should work now that it's claimed)
-      if (runId) {
+      // User is authenticated - now we need to claim the run and check profile
+      if (!publicToken) {
+        // No publicToken but user is logged in - this shouldn't happen in normal flow
+        // Try to check if run is already linked to this user
         const { data: run, error } = await supabase
           .from('diagnosticRuns')
-          .select('nomeEmpresa, cargoUsuario, faturamentoAnual, regimeTributario, usuarioId')
+          .select('nomeEmpresa, cargoUsuario, faturamentoAnual, regimeTributario')
           .eq('id', runId)
           .eq('usuarioId', session.user.id)
-          .single();
+          .maybeSingle();
 
         if (error || !run) {
-          console.error('Error fetching run:', error);
           toast.error("Diagnóstico não encontrado. Inicie um novo.");
           navigate('/orientacoes');
           return;
         }
 
-        // Check if complementary data is complete
         const isProfileComplete = !!(run.nomeEmpresa && run.cargoUsuario && run.faturamentoAnual && run.regimeTributario);
-        
         if (!isProfileComplete) {
           localStorage.setItem('rt-checkout-intent', 'true');
           navigate('/dados-complementares');
           return;
         }
+
+        setIsCheckingAuth(false);
+        return;
       }
 
-      // All good - user can proceed to checkout
+      // We have publicToken - claim the run
+      const { data: claimData, error: claimError } = await supabase.functions.invoke('claimRun', {
+        body: { 
+          publicToken,
+          leadNome: session.user.user_metadata?.nome,
+          leadEmail: session.user.email
+        }
+      });
+      
+      if (claimError) {
+        console.error('Error claiming run:', claimError);
+        toast.error("Erro ao vincular diagnóstico. Tente novamente.");
+        navigate('/orientacoes');
+        return;
+      }
+
+      // claimRun returns isProfileComplete - use it
+      if (claimData?.isProfileComplete === false) {
+        localStorage.setItem('rt-checkout-intent', 'true');
+        navigate('/dados-complementares');
+        return;
+      }
+      
+      // Profile is complete (or claimRun said so) - proceed to checkout
       setIsCheckingAuth(false);
     };
 
