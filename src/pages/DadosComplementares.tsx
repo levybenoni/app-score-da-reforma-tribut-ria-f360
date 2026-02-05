@@ -125,19 +125,44 @@ const DadosComplementares = () => {
         return;
       }
 
-      // Update the diagnosticRun with complementary data
       const runId = localStorage.getItem('diagnosticRunId');
-      if (runId) {
-        await supabase
-          .from('diagnosticRuns')
-          .update({ 
-            leadEmail: formData.email,
-            leadNome: formData.nome
-          })
-          .eq('id', runId);
+      
+      if (!runId) {
+        toast.error("Diagnóstico não encontrado.");
+        navigate('/');
+        return;
       }
 
-      // Save complementary data
+      // First, ensure the run is claimed by this user (in case it wasn't done in signup)
+      const publicToken = localStorage.getItem('diagnosticPublicToken');
+      if (publicToken) {
+        await supabase.functions.invoke('claimRun', {
+          body: { publicToken }
+        });
+      }
+
+      // Update the diagnosticRun with ALL complementary data
+      const { error: updateError } = await supabase
+        .from('diagnosticRuns')
+        .update({ 
+          leadNome: formData.nome,
+          leadEmail: formData.email,
+          leadWhatsapp: formData.whatsapp || null,
+          nomeEmpresa: formData.empresa,
+          cargoUsuario: formData.cargo,
+          regimeTributario: formData.regime,
+          faturamentoAnual: formData.faturamento
+        })
+        .eq('id', runId)
+        .eq('usuarioId', session.user.id);
+
+      if (updateError) {
+        console.error("Error updating diagnosticRun:", updateError);
+        toast.error("Erro ao salvar dados. Tente novamente.");
+        return;
+      }
+
+      // Save complementary data to localStorage as backup
       localStorage.setItem('rt-complementary-data', JSON.stringify(formData));
       
       toast.success("Dados salvos com sucesso!");

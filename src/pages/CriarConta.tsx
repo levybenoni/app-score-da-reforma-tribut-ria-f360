@@ -68,17 +68,21 @@ const CriarConta = () => {
           userId: data.user.id
         }));
 
-        // Update the diagnosticRun with the user ID
-        const runId = localStorage.getItem('diagnosticRunId');
-        if (runId) {
-          await supabase
-            .from('diagnosticRuns')
-            .update({ 
-              usuarioId: data.user.id,
-              leadEmail: formData.email,
-              leadNome: formData.nome
-            })
-            .eq('id', runId);
+        // Use claimRun Edge Function to link the diagnostic to the user
+        const publicToken = localStorage.getItem('diagnosticPublicToken');
+        if (publicToken) {
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session) {
+            const { error: claimError } = await supabase.functions.invoke('claimRun', {
+              body: { publicToken }
+            });
+
+            if (claimError) {
+              console.error('Error claiming run:', claimError);
+              // Continue anyway - we'll try again on next page
+            }
+          }
         }
 
         toast.success("Conta criada com sucesso!");
