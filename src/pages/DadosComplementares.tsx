@@ -367,11 +367,11 @@ const DadosComplementares = () => {
                         <SelectValue placeholder="Selecione a faixa" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
-                        <SelectItem value="0-360k" className="rounded-lg">0 a 360 mil</SelectItem>
-                        <SelectItem value="361k-4.8m" className="rounded-lg">361 mil a 4.800.000</SelectItem>
-                        <SelectItem value="4.8m-10m" className="rounded-lg">4.800.001 a 10 milhões</SelectItem>
-                        <SelectItem value="10m-40m" className="rounded-lg">10 a 40 milhões</SelectItem>
-                        <SelectItem value="40m+" className="rounded-lg">Acima de 40 milhões</SelectItem>
+                        <SelectItem value="0 - 360 mil" className="rounded-lg">0 a 360 mil</SelectItem>
+                        <SelectItem value="361 - 4.800" className="rounded-lg">361 mil a 4.800.000</SelectItem>
+                        <SelectItem value="4.800 a 10 milhões" className="rounded-lg">4.800.001 a 10 milhões</SelectItem>
+                        <SelectItem value="10 a 40 milhões" className="rounded-lg">10 a 40 milhões</SelectItem>
+                        <SelectItem value="+40 milhões" className="rounded-lg">Acima de 40 milhões</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -394,9 +394,9 @@ const DadosComplementares = () => {
                         <SelectValue placeholder="Selecione o regime" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
-                        <SelectItem value="simples" className="rounded-lg">Simples Nacional</SelectItem>
-                        <SelectItem value="presumido" className="rounded-lg">Lucro Presumido</SelectItem>
-                        <SelectItem value="real" className="rounded-lg">Lucro Real</SelectItem>
+                        <SelectItem value="Simples Nacional" className="rounded-lg">Simples Nacional</SelectItem>
+                        <SelectItem value="Lucro Presumido" className="rounded-lg">Lucro Presumido</SelectItem>
+                        <SelectItem value="Lucro Real" className="rounded-lg">Lucro Real</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
