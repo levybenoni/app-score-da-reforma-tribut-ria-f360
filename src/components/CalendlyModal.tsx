@@ -47,7 +47,7 @@ const CalendlyModal = ({ open, onOpenChange, url }: CalendlyModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col max-w-xl w-[92vw] h-[80vh] p-0 gap-0 overflow-hidden rounded-2xl border-0 shadow-2xl bg-white [&>button]:text-muted-foreground [&>button]:hover:text-foreground [&>button]:z-20">
+      <DialogContent className="flex flex-col max-w-xl w-[92vw] h-[80vh] p-0 gap-0 overflow-hidden rounded-2xl border-0 shadow-2xl bg-white [&>button]:text-rt-purple [&>button]:hover:text-rt-dark-blue [&>button]:z-20">
         {/* Thin top accent bar */}
         <div className="h-1 bg-gradient-to-r from-rt-purple via-rt-dark-blue to-rt-light-blue flex-shrink-0" />
 
