@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FileText, DollarSign, Link2, Scale, Sparkles, Loader2, AlertTriangle, Lock, Download } from "lucide-react";
 import { useDiagnosticResult } from "@/hooks/useDiagnosticResult";
 import ContactSections from "@/components/ContactSections";
 import CalendlyModal from "@/components/CalendlyModal";
-
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 const blockIconMap: Record<string, React.ReactNode> = {
   "FISCAL_CREDITO": <FileText className="w-5 h-5" />,
   "CAIXA": <DollarSign className="w-5 h-5" />,
@@ -24,8 +25,38 @@ const CALENDLY_URL = "https://calendly.com/rpa-bwa/diagnostico-reforma-tributari
 
 const Resultado = () => {
   const navigate = useNavigate();
-  const { result, htmlReport, isPremium, isLoading, error } = useDiagnosticResult();
+  const { result, htmlReport, isPremium, schedulingData, isLoading, error, reload } = useDiagnosticResult();
   const [showCalendly, setShowCalendly] = useState(false);
+
+  const handleEventScheduled = useCallback(async (scheduledDate: string | null) => {
+    const runId = localStorage.getItem('diagnosticRunId');
+    if (!runId) return;
+
+    try {
+      const { error: updateError } = await supabase
+        .from('entitlements')
+        .update({
+          agendamentoRealizado: true,
+          agendadoEm: new Date().toISOString(),
+          dataAgendada: scheduledDate ?? new Date().toISOString(),
+        })
+        .eq('runId', runId)
+        .eq('codigoProduto', 'RT_DIAG_PREMIUM')
+        .eq('ativo', true);
+
+      if (updateError) {
+        console.error('Error updating entitlement:', updateError);
+        toast.error('Erro ao registrar agendamento. Tente novamente.');
+        return;
+      }
+
+      toast.success('Agendamento registrado com sucesso!');
+      reload();
+    } catch (err) {
+      console.error('Error in handleEventScheduled:', err);
+      toast.error('Erro ao registrar agendamento.');
+    }
+  }, [reload]);
 
   const overallScore = result?.percentualGeral ?? 0;
   const maturityLevel = result?.nivelMaturidadeGeral?.toLowerCase() ?? "intermediaria";
@@ -221,7 +252,7 @@ const Resultado = () => {
                   )}
                 </div>
                 {/* Contact Sections - Always visible at the end */}
-                <ContactSections isPremium={isPremium} onScheduleClick={() => setShowCalendly(true)} />
+                <ContactSections isPremium={isPremium} schedulingData={schedulingData} onScheduleClick={() => setShowCalendly(true)} />
               </div>
             )}
           </div>
@@ -231,6 +262,7 @@ const Resultado = () => {
           open={showCalendly}
           onOpenChange={setShowCalendly}
           url={CALENDLY_URL}
+          onEventScheduled={handleEventScheduled}
         />
       </div>
     </div>

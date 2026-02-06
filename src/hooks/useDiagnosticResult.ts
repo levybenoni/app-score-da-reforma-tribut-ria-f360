@@ -23,6 +23,11 @@ export function useDiagnosticResult() {
   const [result, setResult] = useState<DiagnosticResult | null>(null);
   const [htmlReport, setHtmlReport] = useState<string | null>(null);
   const [isPremium, setIsPremium] = useState(false);
+  const [schedulingData, setSchedulingData] = useState<{
+    agendamentoRealizado: boolean;
+    agendadoEm: string | null;
+    dataAgendada: string | null;
+  }>({ agendamentoRealizado: false, agendadoEm: null, dataAgendada: null });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -116,6 +121,11 @@ export function useDiagnosticResult() {
 
       if (!entitlementError && entitlementData) {
         setIsPremium(true);
+        setSchedulingData({
+          agendamentoRealizado: entitlementData.agendamentoRealizado ?? false,
+          agendadoEm: entitlementData.agendadoEm ?? null,
+          dataAgendada: entitlementData.dataAgendada ?? null,
+        });
       }
 
     } catch (err) {
@@ -134,6 +144,7 @@ export function useDiagnosticResult() {
     result,
     htmlReport,
     isPremium,
+    schedulingData,
     isLoading,
     error,
     reload: loadResult,
