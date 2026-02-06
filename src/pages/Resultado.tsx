@@ -20,7 +20,7 @@ const blockNameMap: Record<string, string> = {
   "JURIDICO_CONTRATOS": "Jurídico e Contratos",
 };
 
-const CALENDLY_URL = "https://calendly.com/bwaglobal/diagnostico-reforma-tributaria";
+const CALENDLY_URL = "https://calendly.com/rpa-bwa/diagnostico-reforma-tributaria";
 
 const Resultado = () => {
   const navigate = useNavigate();
