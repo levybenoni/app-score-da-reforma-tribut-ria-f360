@@ -47,7 +47,7 @@ const CalendlyModal = ({ open, onOpenChange, url }: CalendlyModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl w-[96vw] h-[90vh] p-0 overflow-hidden rounded-2xl border-0 shadow-2xl bg-white [&>button]:text-muted-foreground [&>button]:hover:text-foreground [&>button]:z-20">
+      <DialogContent className="flex flex-col max-w-2xl w-[94vw] h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl border-0 shadow-2xl bg-white [&>button]:text-muted-foreground [&>button]:hover:text-foreground [&>button]:z-20">
         {/* Thin top accent bar */}
         <div className="h-1 bg-gradient-to-r from-rt-purple via-rt-dark-blue to-rt-light-blue flex-shrink-0" />
 
@@ -67,7 +67,7 @@ const CalendlyModal = ({ open, onOpenChange, url }: CalendlyModalProps) => {
         </div>
 
         {/* Calendly widget area - takes all remaining space */}
-        <div className="flex-1 min-h-0 relative">
+        <div className="flex-1 min-h-0 relative overflow-hidden">
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center z-10 bg-white">
               <div className="flex flex-col items-center gap-3">
@@ -79,9 +79,9 @@ const CalendlyModal = ({ open, onOpenChange, url }: CalendlyModalProps) => {
           {open && (
             <div
               ref={containerRef}
-              className="calendly-inline-widget w-full h-full"
+              className="calendly-inline-widget"
               data-url={calendlyDataUrl}
-              style={{ minWidth: "320px", height: "100%" }}
+              style={{ minWidth: "320px", width: "100%", height: "100%" }}
             />
           )}
         </div>
