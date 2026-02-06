@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, Mail, Lock, Eye, EyeOff, Sparkles, Shield, Loader2, LogIn } from "lucide-react";
+import { ArrowRight, Mail, Lock, Eye, EyeOff, Sparkles, Shield, Loader2, LogIn, KeyRound, ArrowLeft, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -11,6 +11,10 @@ const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showResetForm, setShowResetForm] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetSent, setResetSent] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     senha: "",
@@ -120,6 +124,31 @@ const Login = () => {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetEmail) return;
+    setIsResetting(true);
+
+    try {
+      const redirectUrl = `${window.location.origin}/redefinir-senha`;
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: redirectUrl,
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        setResetSent(true);
+        toast.success("E-mail de redefinição enviado!");
+      }
+    } catch (err) {
+      console.error("Reset password error:", err);
+      toast.error("Erro ao enviar e-mail de redefinição.");
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   const isFormValid = formData.email && formData.senha;
 
   return (
@@ -142,108 +171,205 @@ const Login = () => {
           <div className="h-1 bg-gradient-to-r from-rt-purple via-rt-dark-blue to-rt-light-blue" />
 
           <div className="p-8 md:p-10">
-            {/* Header */}
-            <div className="text-center mb-10">
-              <div className="w-20 h-20 mx-auto mb-6 relative">
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-rt-purple/20 to-rt-dark-blue/20 animate-pulse-glow" />
-                <div className="relative w-full h-full rounded-2xl bg-gradient-to-br from-rt-purple/10 to-rt-dark-blue/10 flex items-center justify-center border border-rt-purple/20">
-                  <LogIn className="w-9 h-9 text-rt-purple" />
-                </div>
-              </div>
-              <h1 className="text-3xl font-bold text-card-foreground mb-3 animate-text-reveal delay-200" style={{ animationFillMode: 'backwards' }}>
-                Entrar na sua conta
-              </h1>
-              <p className="text-muted-foreground animate-text-reveal delay-300" style={{ animationFillMode: 'backwards' }}>
-                Acesse seu diagnóstico e resultado completo.
-              </p>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-2 animate-fade-in-up delay-300" style={{ animationFillMode: 'backwards' }}>
-                <Label htmlFor="email" className="text-card-foreground font-medium text-sm">
-                  E-mail
-                </Label>
-                <div className="relative group">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
-                    <Mail className="w-4 h-4 text-rt-purple" />
+            {showResetForm ? (
+              <>
+                {/* Reset Password Header */}
+                <div className="text-center mb-10">
+                  <div className="w-20 h-20 mx-auto mb-6 relative">
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-rt-purple/20 to-rt-dark-blue/20 animate-pulse-glow" />
+                    <div className="relative w-full h-full rounded-2xl bg-gradient-to-br from-rt-purple/10 to-rt-dark-blue/10 flex items-center justify-center border border-rt-purple/20">
+                      <KeyRound className="w-9 h-9 text-rt-purple" />
+                    </div>
                   </div>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                    disabled={isLoading}
-                    className="pl-14 h-14 input-premium rounded-xl text-base"
-                  />
+                  <h1 className="text-3xl font-bold text-card-foreground mb-3">
+                    Redefinir senha
+                  </h1>
+                  <p className="text-muted-foreground">
+                    {resetSent
+                      ? "Verifique sua caixa de entrada e clique no link para criar uma nova senha."
+                      : "Informe seu e-mail e enviaremos um link para redefinir sua senha."}
+                  </p>
                 </div>
-              </div>
 
-              <div className="space-y-2 animate-fade-in-up delay-400" style={{ animationFillMode: 'backwards' }}>
-                <Label htmlFor="senha" className="text-card-foreground font-medium text-sm">
-                  Senha
-                </Label>
-                <div className="relative group">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
-                    <Lock className="w-4 h-4 text-rt-purple" />
+                {resetSent ? (
+                  <div className="text-center space-y-6">
+                    <div className="w-16 h-16 mx-auto rounded-full bg-green-100 flex items-center justify-center">
+                      <CheckCircle className="w-8 h-8 text-green-600" />
+                    </div>
+                    <p className="text-muted-foreground text-sm">
+                      E-mail enviado para <strong className="text-card-foreground">{resetEmail}</strong>
+                    </p>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => { setShowResetForm(false); setResetSent(false); setResetEmail(""); }}
+                      className="text-rt-purple hover:text-rt-dark-blue font-medium"
+                    >
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      Voltar para o login
+                    </Button>
                   </div>
-                  <Input
-                    id="senha"
-                    name="senha"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={formData.senha}
-                    onChange={handleChange}
-                    disabled={isLoading}
-                    className="pl-14 pr-12 h-14 input-premium rounded-xl text-base"
-                  />
+                ) : (
+                  <form onSubmit={handleResetPassword} className="space-y-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="resetEmail" className="text-card-foreground font-medium text-sm">
+                        E-mail
+                      </Label>
+                      <div className="relative group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
+                          <Mail className="w-4 h-4 text-rt-purple" />
+                        </div>
+                        <Input
+                          id="resetEmail"
+                          type="email"
+                          placeholder="seu@email.com"
+                          value={resetEmail}
+                          onChange={(e) => setResetEmail(e.target.value)}
+                          disabled={isResetting}
+                          className="pl-14 h-14 input-premium rounded-xl text-base"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-4">
+                      <Button
+                        type="submit"
+                        disabled={!resetEmail || isResetting}
+                        className="w-full btn-premium text-white font-semibold text-lg py-7 h-auto rounded-2xl group disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        <span className="relative z-10 flex items-center justify-center">
+                          {isResetting ? (
+                            <>
+                              <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                              Enviando...
+                            </>
+                          ) : (
+                            <>
+                              Enviar link de redefinição
+                              <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                            </>
+                          )}
+                        </span>
+                      </Button>
+                    </div>
+
+                    <div className="text-center mt-4">
+                      <button
+                        type="button"
+                        onClick={() => { setShowResetForm(false); setResetEmail(""); }}
+                        className="text-rt-purple hover:text-rt-dark-blue font-medium text-sm transition-colors inline-flex items-center gap-1"
+                      >
+                        <ArrowLeft className="w-4 h-4" />
+                        Voltar para o login
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </>
+            ) : (
+              <>
+                {/* Login Header */}
+                <div className="text-center mb-10">
+                  <div className="w-20 h-20 mx-auto mb-6 relative">
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-rt-purple/20 to-rt-dark-blue/20 animate-pulse-glow" />
+                    <div className="relative w-full h-full rounded-2xl bg-gradient-to-br from-rt-purple/10 to-rt-dark-blue/10 flex items-center justify-center border border-rt-purple/20">
+                      <LogIn className="w-9 h-9 text-rt-purple" />
+                    </div>
+                  </div>
+                  <h1 className="text-3xl font-bold text-card-foreground mb-3 animate-text-reveal delay-200" style={{ animationFillMode: 'backwards' }}>
+                    Entrar na sua conta
+                  </h1>
+                  <p className="text-muted-foreground animate-text-reveal delay-300" style={{ animationFillMode: 'backwards' }}>
+                    Acesse seu diagnóstico e resultado completo.
+                  </p>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="space-y-2 animate-fade-in-up delay-300" style={{ animationFillMode: 'backwards' }}>
+                    <Label htmlFor="email" className="text-card-foreground font-medium text-sm">
+                      E-mail
+                    </Label>
+                    <div className="relative group">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
+                        <Mail className="w-4 h-4 text-rt-purple" />
+                      </div>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        value={formData.email}
+                        onChange={handleChange}
+                        disabled={isLoading}
+                        className="pl-14 h-14 input-premium rounded-xl text-base"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 animate-fade-in-up delay-400" style={{ animationFillMode: 'backwards' }}>
+                    <Label htmlFor="senha" className="text-card-foreground font-medium text-sm">
+                      Senha
+                    </Label>
+                    <div className="relative group">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
+                        <Lock className="w-4 h-4 text-rt-purple" />
+                      </div>
+                      <Input
+                        id="senha"
+                        name="senha"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={formData.senha}
+                        onChange={handleChange}
+                        disabled={isLoading}
+                        className="pl-14 pr-12 h-14 input-premium rounded-xl text-base"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-transparent hover:bg-rt-purple/5 flex items-center justify-center transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4 text-muted-foreground" /> : <Eye className="w-4 h-4 text-muted-foreground" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 animate-fade-in-up delay-500" style={{ animationFillMode: 'backwards' }}>
+                    <Button
+                      type="submit"
+                      disabled={!isFormValid || isLoading}
+                      className="w-full btn-premium text-white font-semibold text-lg py-7 h-auto rounded-2xl group disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <span className="relative z-10 flex items-center justify-center">
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                            Entrando...
+                          </>
+                        ) : (
+                          <>
+                            Acessar diagnóstico
+                            <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                          </>
+                        )}
+                      </span>
+                    </Button>
+                  </div>
+                </form>
+
+                {/* Forgot password link */}
+                <div className="mt-6 text-center animate-fade-in-up delay-600" style={{ animationFillMode: 'backwards' }}>
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-transparent hover:bg-rt-purple/5 flex items-center justify-center transition-colors"
+                    onClick={() => { setShowResetForm(true); setResetEmail(formData.email); }}
+                    className="text-rt-purple hover:text-rt-dark-blue font-medium text-sm transition-colors"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4 text-muted-foreground" /> : <Eye className="w-4 h-4 text-muted-foreground" />}
+                    Esqueceu sua senha?
                   </button>
                 </div>
-              </div>
-
-              <div className="pt-4 animate-fade-in-up delay-500" style={{ animationFillMode: 'backwards' }}>
-                <Button
-                  type="submit"
-                  disabled={!isFormValid || isLoading}
-                  className="w-full btn-premium text-white font-semibold text-lg py-7 h-auto rounded-2xl group disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <span className="relative z-10 flex items-center justify-center">
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                        Entrando...
-                      </>
-                    ) : (
-                      <>
-                        Acessar diagnóstico
-                        <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
-                      </>
-                    )}
-                  </span>
-                </Button>
-              </div>
-            </form>
-
-            {/* Create account link */}
-            <div className="mt-6 text-center animate-fade-in-up delay-600" style={{ animationFillMode: 'backwards' }}>
-              <p className="text-muted-foreground text-sm">
-                Ainda não tem conta?{" "}
-                <Link 
-                  to="/criar-conta" 
-                  className="text-rt-purple hover:text-rt-dark-blue font-medium transition-colors"
-                >
-                  Criar conta
-                </Link>
-              </p>
-            </div>
+              </>
+            )}
 
             {/* Security badge */}
             <div className="flex items-center justify-center gap-2 mt-8 text-muted-foreground text-sm animate-fade-in-up delay-700" style={{ animationFillMode: 'backwards' }}>

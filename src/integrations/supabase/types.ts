@@ -255,8 +255,11 @@ export type Database = {
       }
       entitlements: {
         Row: {
+          agendadoEm: string | null
+          agendamentoRealizado: boolean
           ativo: boolean
           codigoProduto: string
+          dataAgendada: string | null
           fimEm: string | null
           id: string
           inicioEm: string
@@ -264,8 +267,11 @@ export type Database = {
           usuarioId: string
         }
         Insert: {
+          agendadoEm?: string | null
+          agendamentoRealizado?: boolean
           ativo?: boolean
           codigoProduto: string
+          dataAgendada?: string | null
           fimEm?: string | null
           id?: string
           inicioEm?: string
@@ -273,8 +279,11 @@ export type Database = {
           usuarioId: string
         }
         Update: {
+          agendadoEm?: string | null
+          agendamentoRealizado?: boolean
           ativo?: boolean
           codigoProduto?: string
+          dataAgendada?: string | null
           fimEm?: string | null
           id?: string
           inicioEm?: string
