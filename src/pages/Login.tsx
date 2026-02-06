@@ -21,23 +21,47 @@ const Login = () => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        redirectToLatestDiagnostic(session.user.id);
+        await handlePostLogin(session.user.id);
       }
     };
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
-        redirectToLatestDiagnostic(session.user.id);
+        handlePostLogin(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
+  const handlePostLogin = async (userId: string) => {
+    // Claim run if publicToken exists
+    const publicToken = localStorage.getItem('diagnosticPublicToken');
+    if (publicToken) {
+      try {
+        await supabase.functions.invoke('claimRun', {
+          body: { publicToken }
+        });
+      } catch (err) {
+        console.error('Error claiming run:', err);
+      }
+    }
+
+    // Check if there was a checkout intent
+    const checkoutIntent = localStorage.getItem('rt-checkout-intent');
+    if (checkoutIntent) {
+      localStorage.removeItem('rt-checkout-intent');
+      navigate('/compra');
+      return;
+    }
+
+    // Otherwise, redirect to latest diagnostic
+    await redirectToLatestDiagnostic(userId);
+  };
+
   const redirectToLatestDiagnostic = async (userId: string) => {
     try {
-      // Find the most recent diagnostic run for this user
       const { data: runs, error } = await supabase
         .from('diagnosticRuns')
         .select('id, publicToken')
@@ -48,12 +72,10 @@ const Login = () => {
       if (error) throw error;
 
       if (runs && runs.length > 0) {
-        // Store the run ID and navigate to result
         localStorage.setItem('diagnosticRunId', runs[0].id);
-        localStorage.setItem('rt-public-token', runs[0].publicToken);
+        localStorage.setItem('diagnosticPublicToken', runs[0].publicToken);
         navigate('/resultado');
       } else {
-        // No diagnostic found, go to start
         toast.info("Nenhum diagnóstico encontrado. Inicie um novo!");
         navigate('/orientacoes');
       }

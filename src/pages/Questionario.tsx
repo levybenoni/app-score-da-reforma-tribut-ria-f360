@@ -84,7 +84,7 @@ const Questionario = () => {
       if (currentBlockIndex < totalBlocks - 1) {
         navigate(`/questionario/${currentBlockIndex + 2}`);
       } else {
-        navigate("/loading");
+        navigate("/dados-complementares");
       }
     } finally {
       setIsNavigating(false);

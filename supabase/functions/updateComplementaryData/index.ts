@@ -13,48 +13,29 @@ Deno.serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    
-    // Get authorization header to verify user
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      console.error('No valid authorization header')
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - no valid token provided' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Create client with user's token to get claims
-    const userSupabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    })
-
-    const token = authHeader.replace('Bearer ', '')
-    const { data: claimsData, error: claimsError } = await userSupabase.auth.getClaims(token)
-
-    if (claimsError || !claimsData?.claims) {
-      console.error('Error getting user claims:', claimsError)
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - invalid token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const userId = claimsData.claims.sub
-    if (!userId) {
-      console.error('No user ID in token')
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - no user ID in token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    console.log('Processing request for user:', userId)
 
     // Use service role for database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+    // Check for optional auth header
+    const authHeader = req.headers.get('Authorization')
+    let userId: string | null = null
+
+    if (authHeader?.startsWith('Bearer ')) {
+      const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+      const userSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } }
+      })
+
+      const token = authHeader.replace('Bearer ', '')
+      const { data: claimsData, error: claimsError } = await userSupabase.auth.getClaims(token)
+
+      if (!claimsError && claimsData?.claims?.sub) {
+        userId = claimsData.claims.sub
+        console.log('Authenticated user:', userId)
+      }
+    }
 
     const body = await req.json()
     const { publicToken, nome, email, whatsapp, empresa, cargo, faturamento, regime } = body
@@ -86,35 +67,35 @@ Deno.serve(async (req) => {
 
     console.log('Found run:', run.id, 'with usuarioId:', run.usuarioId)
 
-    // If run is not claimed, claim it for this user
-    if (!run.usuarioId) {
-      console.log('Claiming run for user:', userId)
-      const { error: claimError } = await supabase
-        .from('diagnosticRuns')
-        .update({ usuarioId: userId })
-        .eq('id', run.id)
+    // If authenticated, handle claiming
+    if (userId) {
+      if (!run.usuarioId) {
+        console.log('Claiming run for user:', userId)
+        const { error: claimError } = await supabase
+          .from('diagnosticRuns')
+          .update({ usuarioId: userId })
+          .eq('id', run.id)
 
-      if (claimError) {
-        console.error('Error claiming run:', claimError)
+        if (claimError) {
+          console.error('Error claiming run:', claimError)
+          return new Response(
+            JSON.stringify({ error: 'Failed to claim diagnostic run', details: claimError.message }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+      } else if (run.usuarioId !== userId) {
+        console.error('Run belongs to another user:', run.usuarioId)
         return new Response(
-          JSON.stringify({ error: 'Failed to claim diagnostic run', details: claimError.message }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: 'This diagnostic run belongs to another user' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
-    } else if (run.usuarioId !== userId) {
-      // Run belongs to another user
-      console.error('Run belongs to another user:', run.usuarioId)
-      return new Response(
-        JSON.stringify({ error: 'This diagnostic run belongs to another user' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
     }
 
     // Update the run with complementary data
-    const updateData: Record<string, string | null> = {
-      usuarioId: userId, // Ensure userId is set
-    }
+    const updateData: Record<string, string | null> = {}
 
+    if (userId) updateData.usuarioId = userId
     if (nome) updateData.leadNome = nome
     if (email) updateData.leadEmail = email
     if (whatsapp) updateData.leadWhatsapp = whatsapp

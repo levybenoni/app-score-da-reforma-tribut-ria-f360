@@ -17,7 +17,6 @@ import { toast } from "sonner";
 const DadosComplementares = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [formData, setFormData] = useState({
     nome: "",
     empresa: "",
@@ -28,60 +27,43 @@ const DadosComplementares = () => {
     regime: "",
   });
 
-  // Check authentication and load saved data
+  // Pre-fill with any available user data (no auth required)
   useEffect(() => {
-    const checkAuth = async () => {
-      setIsCheckingAuth(true);
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        localStorage.setItem('rt-checkout-intent', 'true');
-        navigate('/criar-conta');
-        return;
-      }
+    const publicToken = localStorage.getItem('diagnosticPublicToken');
+    if (!publicToken) {
+      toast.error("Diagnóstico não encontrado. Por favor, reinicie o questionário.");
+      navigate('/');
+      return;
+    }
 
-      // Check if complementary data already exists and is complete
-      const savedData = localStorage.getItem('rt-complementary-data');
-      if (savedData) {
-        const parsed = JSON.parse(savedData);
-        const isComplete = parsed.empresa && parsed.cargo && parsed.faturamento && parsed.regime;
-        
-        if (isComplete) {
-          // User already has complete data, skip to payment
-          navigate('/compra');
-          return;
-        }
-        
-        // Load partial data
+    // Load any saved data from localStorage
+    const savedData = localStorage.getItem('rt-complementary-data');
+    if (savedData) {
+      const parsed = JSON.parse(savedData);
+      setFormData(prev => ({ ...prev, ...parsed }));
+    }
+
+    // Try to pre-fill from user data if available
+    const userData = localStorage.getItem('rt-user-data');
+    if (userData) {
+      const parsed = JSON.parse(userData);
+      setFormData(prev => ({
+        ...prev,
+        nome: prev.nome || parsed.nome || "",
+        email: prev.email || parsed.email || "",
+      }));
+    }
+
+    // Also check if there's an active session for pre-fill
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
         setFormData(prev => ({
           ...prev,
-          ...parsed,
-          nome: session.user.user_metadata?.nome || parsed.nome || prev.nome,
-          email: session.user.email || parsed.email || prev.email
+          nome: prev.nome || session.user.user_metadata?.nome || "",
+          email: prev.email || session.user.email || "",
         }));
-      } else {
-        // Pre-fill with user data from auth only
-        setFormData(prev => ({
-          ...prev,
-          nome: session.user.user_metadata?.nome || "",
-          email: session.user.email || ""
-        }));
-      }
-
-      setIsCheckingAuth(false);
-    };
-
-    checkAuth();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session && !isCheckingAuth) {
-        navigate('/criar-conta');
       }
     });
-
-    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const formatWhatsApp = (value: string) => {
@@ -116,15 +98,6 @@ const DadosComplementares = () => {
     setIsLoading(true);
 
     try {
-      // Get current user
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast.error("Sessão expirada. Faça login novamente.");
-        navigate('/criar-conta');
-        return;
-      }
-
       const publicToken = localStorage.getItem('diagnosticPublicToken');
       
       if (!publicToken) {
@@ -135,8 +108,7 @@ const DadosComplementares = () => {
 
       console.log("Calling updateComplementaryData with publicToken:", publicToken);
 
-      // Use the edge function to update complementary data
-      // This handles claiming the run and updating data in one call using service role
+      // Call edge function - works with or without auth
       const { data: result, error: updateError } = await supabase.functions.invoke('updateComplementaryData', {
         body: { 
           publicToken,
@@ -173,7 +145,9 @@ const DadosComplementares = () => {
       localStorage.setItem('rt-complementary-data', JSON.stringify(formData));
       
       toast.success("Dados salvos com sucesso!");
-      navigate("/compra");
+      
+      // Redirect to loading (which triggers finalize + webhook)
+      navigate("/loading");
     } catch (err) {
       console.error("Error saving data:", err);
       toast.error("Erro ao salvar dados. Tente novamente.");
@@ -189,14 +163,6 @@ const DadosComplementares = () => {
     formData.email &&
     formData.faturamento &&
     formData.regime;
-
-  if (isCheckingAuth) {
-    return (
-      <div className="min-h-screen bg-rt-gradient flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-white animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-rt-gradient flex items-center justify-center px-4 py-8 relative overflow-hidden">
@@ -341,8 +307,7 @@ const DadosComplementares = () => {
                       value={formData.email}
                       onChange={handleChange}
                       disabled={isLoading}
-                      className="pl-14 h-14 input-premium rounded-xl text-base bg-muted/50"
-                      readOnly
+                      className="pl-14 h-14 input-premium rounded-xl text-base"
                     />
                   </div>
                 </div>
@@ -417,7 +382,7 @@ const DadosComplementares = () => {
                       </>
                     ) : (
                       <>
-                        Continuar para pagamento
+                        Ver meu resultado
                         <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
                       </>
                     )}
