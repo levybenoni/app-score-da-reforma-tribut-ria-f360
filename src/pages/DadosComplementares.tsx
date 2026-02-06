@@ -125,79 +125,49 @@ const DadosComplementares = () => {
         return;
       }
 
-      const userId = session.user.id;
       const publicToken = localStorage.getItem('diagnosticPublicToken');
       
-      // First, ensure the run is claimed by this user (in case it wasn't done in signup)
-      if (publicToken) {
-        const { data: claimData, error: claimError } = await supabase.functions.invoke('claimRun', {
-          body: { publicToken }
-        });
-        
-        if (claimError) {
-          console.error("Error claiming run:", claimError);
-        } else {
-          console.log("Claim result:", claimData);
-        }
-      }
-
-      // Find the user's diagnostic run - either by publicToken or by usuarioId
-      // This ensures we're updating the correct run that belongs to this user
-      let runId = localStorage.getItem('diagnosticRunId');
-      
-      // Verify this run actually belongs to the user by fetching it
-      const { data: userRun, error: fetchError } = await supabase
-        .from('diagnosticRuns')
-        .select('id')
-        .eq('usuarioId', userId)
-        .order('criadoEm', { ascending: false })
-        .limit(1)
-        .single();
-      
-      if (fetchError || !userRun) {
-        console.error("Could not find user's diagnostic run:", fetchError);
+      if (!publicToken) {
         toast.error("Diagnóstico não encontrado. Por favor, reinicie o questionário.");
         navigate('/');
         return;
       }
-      
-      // Use the verified run ID
-      runId = userRun.id;
-      console.log("Using verified runId:", runId);
 
-      // Update the diagnosticRun with ALL complementary data
-      const { data: updatedData, error: updateError } = await supabase
-        .from('diagnosticRuns')
-        .update({ 
-          leadNome: formData.nome,
-          leadEmail: formData.email,
-          leadWhatsapp: formData.whatsapp || null,
-          nomeEmpresa: formData.empresa,
-          cargoUsuario: formData.cargo,
-          regimeTributario: formData.regime,
-          faturamentoAnual: formData.faturamento
-        })
-        .eq('id', runId)
-        .eq('usuarioId', userId) // Double-check ownership
-        .select();
+      console.log("Calling updateComplementaryData with publicToken:", publicToken);
+
+      // Use the edge function to update complementary data
+      // This handles claiming the run and updating data in one call using service role
+      const { data: result, error: updateError } = await supabase.functions.invoke('updateComplementaryData', {
+        body: { 
+          publicToken,
+          nome: formData.nome,
+          email: formData.email,
+          whatsapp: formData.whatsapp || null,
+          empresa: formData.empresa,
+          cargo: formData.cargo,
+          faturamento: formData.faturamento,
+          regime: formData.regime
+        }
+      });
 
       if (updateError) {
-        console.error("Error updating diagnosticRun:", updateError);
+        console.error("Error from updateComplementaryData:", updateError);
         toast.error("Erro ao salvar dados. Tente novamente.");
         return;
       }
 
-      // Check if any row was actually updated
-      if (!updatedData || updatedData.length === 0) {
-        console.error("No rows updated - update may have failed");
-        toast.error("Não foi possível salvar os dados. Tente novamente.");
+      if (!result?.success) {
+        console.error("Update failed:", result?.error);
+        toast.error(result?.error || "Erro ao salvar dados. Tente novamente.");
         return;
       }
 
-      console.log("Successfully updated diagnosticRun:", updatedData);
+      console.log("Successfully updated diagnosticRun:", result);
       
       // Update localStorage with the correct runId
-      localStorage.setItem('diagnosticRunId', runId);
+      if (result.runId) {
+        localStorage.setItem('diagnosticRunId', result.runId);
+      }
       
       // Save complementary data to localStorage as backup
       localStorage.setItem('rt-complementary-data', JSON.stringify(formData));
