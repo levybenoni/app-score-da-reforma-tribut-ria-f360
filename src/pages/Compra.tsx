@@ -14,7 +14,7 @@ const Compra = () => {
     const checkAuth = async () => {
       setIsCheckingAuth(true);
       
-      // FIRST: Check if user is authenticated - redirect to criar-conta if not
+      // Check if user is authenticated - redirect to criar-conta if not
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -24,7 +24,7 @@ const Compra = () => {
         return;
       }
 
-      // SECOND: Check if there's a diagnostic run - only after auth is confirmed
+      // Check if there's a diagnostic run
       const runId = localStorage.getItem('diagnosticRunId');
       if (!runId) {
         toast.error("Diagnóstico não encontrado. Por favor, complete o questionário primeiro.");
@@ -32,12 +32,16 @@ const Compra = () => {
         return;
       }
 
-      // THIRD: Check if complementary data exists
-      const complementaryData = localStorage.getItem('rt-complementary-data');
-      if (!complementaryData) {
-        localStorage.setItem('rt-checkout-intent', 'true');
-        navigate('/dados-complementares');
-        return;
+      // Claim run for this user if not yet claimed
+      const publicToken = localStorage.getItem('diagnosticPublicToken');
+      if (publicToken) {
+        try {
+          await supabase.functions.invoke('claimRun', {
+            body: { publicToken }
+          });
+        } catch (err) {
+          console.error('Error claiming run:', err);
+        }
       }
 
       setIsCheckingAuth(false);
@@ -91,26 +95,16 @@ const Compra = () => {
       return;
     }
 
-    // STEP 1: Check if user is authenticated
+    // Check if user is authenticated
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session?.user) {
-      // Not authenticated - redirect to create account
       localStorage.setItem('rt-checkout-intent', 'true');
       navigate('/criar-conta');
       return;
     }
 
-    // STEP 2: Check if complementary data exists
-    const complementaryData = localStorage.getItem('rt-complementary-data');
-    if (!complementaryData) {
-      // No complementary data - redirect to fill it
-      localStorage.setItem('rt-checkout-intent', 'true');
-      navigate('/dados-complementares');
-      return;
-    }
-
-    // STEP 3: All validations passed - proceed to checkout
+    // Proceed to checkout directly - dados complementares already filled
     setIsLoading(true);
 
     try {

@@ -44,7 +44,7 @@ const CriarConta = () => {
         email: formData.email,
         password: formData.senha,
         options: {
-          emailRedirectTo: `${window.location.origin}/dados-complementares`,
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             nome: formData.nome,
           },
@@ -61,14 +61,14 @@ const CriarConta = () => {
       }
 
       if (data.user) {
-        // Save user data to localStorage for sync with next screen
+        // Save user data to localStorage for sync
         localStorage.setItem('rt-user-data', JSON.stringify({
           nome: formData.nome,
           email: formData.email,
           userId: data.user.id
         }));
 
-        // Use claimRun Edge Function to link the diagnostic to the user
+        // Claim the diagnostic run for this user
         const publicToken = localStorage.getItem('diagnosticPublicToken');
         if (publicToken) {
           const { data: { session } } = await supabase.auth.getSession();
@@ -80,13 +80,21 @@ const CriarConta = () => {
 
             if (claimError) {
               console.error('Error claiming run:', claimError);
-              // Continue anyway - we'll try again on next page
+              // Continue anyway - claimRun will be retried on compra page
             }
           }
         }
 
         toast.success("Conta criada com sucesso!");
-        navigate("/dados-complementares");
+        
+        // Check if user was trying to pay (checkout intent)
+        const checkoutIntent = localStorage.getItem('rt-checkout-intent');
+        if (checkoutIntent) {
+          localStorage.removeItem('rt-checkout-intent');
+          navigate("/compra");
+        } else {
+          navigate("/resultado");
+        }
       }
     } catch (err) {
       console.error("Signup error:", err);
