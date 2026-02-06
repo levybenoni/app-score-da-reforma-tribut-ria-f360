@@ -56,8 +56,7 @@ const ContactSections = ({ isPremium, schedulingData, onScheduleClick }: Contact
           {/* Content - switches based on scheduling state */}
           {isAlreadyScheduled ? (
             <>
-              <h3 className="text-xl font-bold text-card-foreground mb-2 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-secondary" />
+              <h3 className="text-xl font-bold text-card-foreground mb-2">
                 Agendamento já realizado
               </h3>
               <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
