@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FileText, DollarSign, Link2, Scale, Sparkles, Loader2, AlertTriangle, Lock, Download } from "lucide-react";
+import { exportPdfFromHtml } from "@/lib/exportPdf";
 import { useDiagnosticResult } from "@/hooks/useDiagnosticResult";
 import ContactSections from "@/components/ContactSections";
 import CalendlyModal from "@/components/CalendlyModal";
@@ -27,6 +28,21 @@ const Resultado = () => {
   const navigate = useNavigate();
   const { result, htmlReport, isPremium, schedulingData, isLoading, error, reload } = useDiagnosticResult();
   const [showCalendly, setShowCalendly] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportPdf = useCallback(async () => {
+    if (!htmlReport || isExporting) return;
+    setIsExporting(true);
+    try {
+      await exportPdfFromHtml(htmlReport);
+      toast.success("PDF exportado com sucesso!");
+    } catch (err) {
+      console.error("Error exporting PDF:", err);
+      toast.error("Erro ao exportar PDF. Tente novamente.");
+    } finally {
+      setIsExporting(false);
+    }
+  }, [htmlReport, isExporting]);
 
   const handleEventScheduled = useCallback(async (scheduledDate: string | null) => {
     const runId = localStorage.getItem('diagnosticRunId');
@@ -200,12 +216,17 @@ const Resultado = () => {
                   {/* Premium Action Button */}
                   {isPremium && (
                     <Button
-                      onClick={() => window.print()}
+                      onClick={handleExportPdf}
+                      disabled={isExporting}
                       size="sm"
                       className="gap-2 bg-rt-purple hover:bg-rt-purple/90 text-white shadow-md hover:shadow-lg hover:shadow-rt-purple/30 transition-all duration-300"
                     >
-                      <Download className="w-4 h-4" />
-                      Exportar PDF
+                      {isExporting ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Download className="w-4 h-4" />
+                      )}
+                      {isExporting ? "Gerando PDF..." : "Exportar PDF"}
                     </Button>
                   )}
                 </div>
