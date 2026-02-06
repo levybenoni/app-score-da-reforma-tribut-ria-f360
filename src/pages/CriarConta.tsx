@@ -12,11 +12,16 @@ const CriarConta = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    nome: "",
-    email: "",
-    senha: "",
-    confirmarSenha: "",
+  const [formData, setFormData] = useState(() => {
+    // Pre-fill from complementary data saved during diagnostic flow
+    const savedData = localStorage.getItem('rt-complementary-data');
+    const parsed = savedData ? JSON.parse(savedData) : {};
+    return {
+      nome: parsed.nome || "",
+      email: parsed.email || "",
+      senha: "",
+      confirmarSenha: "",
+    };
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
