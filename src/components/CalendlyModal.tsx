@@ -24,7 +24,6 @@ const CalendlyModal = ({ open, onOpenChange, url }: CalendlyModalProps) => {
       return;
     }
 
-    // Load Calendly widget script
     const loadScript = () => {
       return new Promise<void>((resolve) => {
         const existing = document.querySelector(
@@ -43,34 +42,33 @@ const CalendlyModal = ({ open, onOpenChange, url }: CalendlyModalProps) => {
     };
 
     loadScript().then(() => {
-      // Wait a tick for Calendly to process the widget
-      setTimeout(() => setIsLoading(false), 1000);
+      setTimeout(() => setIsLoading(false), 1500);
     });
   }, [open]);
 
-  const calendlyDataUrl = `${url}?hide_event_type_details=1&hide_gdpr_banner=1&text_color=754c99&primary_color=754c99`;
+  const calendlyDataUrl = `${url}?hide_event_type_details=1&hide_gdpr_banner=1&background_color=754c99&text_color=ffffff&primary_color=ffffff`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl w-[95vw] h-[85vh] p-0 overflow-hidden rounded-2xl border border-border/40 bg-background shadow-2xl">
+      <DialogContent className="max-w-3xl w-[95vw] h-[85vh] p-0 overflow-hidden rounded-2xl border border-border/40 shadow-2xl" style={{ backgroundColor: '#754c99' }}>
         <DialogHeader className="px-6 pt-6 pb-2">
-          <DialogTitle className="flex items-center gap-2 text-xl text-foreground">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rt-purple/10 to-rt-dark-blue/10 flex items-center justify-center border border-rt-purple/20">
-              <Calendar className="w-5 h-5 text-rt-purple" />
+          <DialogTitle className="flex items-center gap-2 text-xl text-white">
+            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
+              <Calendar className="w-5 h-5 text-white" />
             </div>
             Agendar Reunião Estratégica
           </DialogTitle>
-          <DialogDescription className="text-muted-foreground">
+          <DialogDescription className="text-white/70">
             Escolha o melhor dia e horário para sua reunião com nossos especialistas.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 min-h-0 px-6 pb-6 relative">
           {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center z-10 bg-background/80 rounded-xl">
+            <div className="absolute inset-0 flex items-center justify-center z-10 rounded-xl" style={{ backgroundColor: 'rgba(117, 76, 153, 0.9)' }}>
               <div className="flex flex-col items-center gap-3">
-                <Loader2 className="w-8 h-8 text-rt-purple animate-spin" />
-                <p className="text-sm text-muted-foreground">Carregando agenda...</p>
+                <Loader2 className="w-8 h-8 text-white animate-spin" />
+                <p className="text-sm text-white/70">Carregando agenda...</p>
               </div>
             </div>
           )}
