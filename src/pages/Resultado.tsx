@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FileText, DollarSign, Link2, Scale, Sparkles, Loader2, AlertTriangle, Lock, Download } from "lucide-react";
 import { useDiagnosticResult } from "@/hooks/useDiagnosticResult";
 import ContactSections from "@/components/ContactSections";
+import CalendlyModal from "@/components/CalendlyModal";
 
 const blockIconMap: Record<string, React.ReactNode> = {
   "FISCAL_CREDITO": <FileText className="w-5 h-5" />,
@@ -18,13 +20,12 @@ const blockNameMap: Record<string, string> = {
   "JURIDICO_CONTRATOS": "Jurídico e Contratos",
 };
 
+const CALENDLY_URL = "https://calendly.com/bwaglobal/diagnostico-reforma-tributaria";
+
 const Resultado = () => {
   const navigate = useNavigate();
   const { result, htmlReport, isPremium, isLoading, error } = useDiagnosticResult();
-
-  const handleScheduleClick = () => {
-    window.open('https://calendly.com/bwaglobal/diagnostico-reforma-tributaria', '_blank');
-  };
+  const [showCalendly, setShowCalendly] = useState(false);
 
   const overallScore = result?.percentualGeral ?? 0;
   const maturityLevel = result?.nivelMaturidadeGeral?.toLowerCase() ?? "intermediaria";
@@ -220,11 +221,17 @@ const Resultado = () => {
                   )}
                 </div>
                 {/* Contact Sections - Always visible at the end */}
-                <ContactSections isPremium={isPremium} onScheduleClick={handleScheduleClick} />
+                <ContactSections isPremium={isPremium} onScheduleClick={() => setShowCalendly(true)} />
               </div>
             )}
           </div>
         </div>
+
+        <CalendlyModal
+          open={showCalendly}
+          onOpenChange={setShowCalendly}
+          url={CALENDLY_URL}
+        />
       </div>
     </div>
   );
