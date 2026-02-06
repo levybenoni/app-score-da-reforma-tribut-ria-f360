@@ -125,28 +125,47 @@ const DadosComplementares = () => {
         return;
       }
 
-      const runId = localStorage.getItem('diagnosticRunId');
-      
-      if (!runId) {
-        toast.error("Diagnóstico não encontrado.");
-        navigate('/');
-        return;
-      }
-
-      // First, ensure the run is claimed by this user (in case it wasn't done in signup)
+      const userId = session.user.id;
       const publicToken = localStorage.getItem('diagnosticPublicToken');
+      
+      // First, ensure the run is claimed by this user (in case it wasn't done in signup)
       if (publicToken) {
-        const { error: claimError } = await supabase.functions.invoke('claimRun', {
+        const { data: claimData, error: claimError } = await supabase.functions.invoke('claimRun', {
           body: { publicToken }
         });
         
         if (claimError) {
           console.error("Error claiming run:", claimError);
+        } else {
+          console.log("Claim result:", claimData);
         }
       }
 
+      // Find the user's diagnostic run - either by publicToken or by usuarioId
+      // This ensures we're updating the correct run that belongs to this user
+      let runId = localStorage.getItem('diagnosticRunId');
+      
+      // Verify this run actually belongs to the user by fetching it
+      const { data: userRun, error: fetchError } = await supabase
+        .from('diagnosticRuns')
+        .select('id')
+        .eq('usuarioId', userId)
+        .order('criadoEm', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (fetchError || !userRun) {
+        console.error("Could not find user's diagnostic run:", fetchError);
+        toast.error("Diagnóstico não encontrado. Por favor, reinicie o questionário.");
+        navigate('/');
+        return;
+      }
+      
+      // Use the verified run ID
+      runId = userRun.id;
+      console.log("Using verified runId:", runId);
+
       // Update the diagnosticRun with ALL complementary data
-      // Use .select() to verify the update succeeded
       const { data: updatedData, error: updateError } = await supabase
         .from('diagnosticRuns')
         .update({ 
@@ -159,6 +178,7 @@ const DadosComplementares = () => {
           faturamentoAnual: formData.faturamento
         })
         .eq('id', runId)
+        .eq('usuarioId', userId) // Double-check ownership
         .select();
 
       if (updateError) {
@@ -169,11 +189,16 @@ const DadosComplementares = () => {
 
       // Check if any row was actually updated
       if (!updatedData || updatedData.length === 0) {
-        console.error("No rows updated - run may not belong to this user");
-        toast.error("Não foi possível salvar os dados. Verifique seu diagnóstico.");
+        console.error("No rows updated - update may have failed");
+        toast.error("Não foi possível salvar os dados. Tente novamente.");
         return;
       }
 
+      console.log("Successfully updated diagnosticRun:", updatedData);
+      
+      // Update localStorage with the correct runId
+      localStorage.setItem('diagnosticRunId', runId);
+      
       // Save complementary data to localStorage as backup
       localStorage.setItem('rt-complementary-data', JSON.stringify(formData));
       
