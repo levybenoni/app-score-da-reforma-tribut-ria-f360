@@ -43,11 +43,11 @@ const CalendlyModal = ({ open, onOpenChange, url }: CalendlyModalProps) => {
     });
   }, [open]);
 
-  const calendlyDataUrl = `${url}?hide_event_type_details=1&hide_gdpr_banner=1`;
+  const calendlyDataUrl = `${url}?hide_event_type_details=1&hide_gdpr_banner=1&primary_color=754c99`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col max-w-2xl w-[94vw] h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl border-0 shadow-2xl bg-white [&>button]:text-muted-foreground [&>button]:hover:text-foreground [&>button]:z-20">
+      <DialogContent className="flex flex-col max-w-xl w-[92vw] h-[80vh] p-0 gap-0 overflow-hidden rounded-2xl border-0 shadow-2xl bg-white [&>button]:text-muted-foreground [&>button]:hover:text-foreground [&>button]:z-20">
         {/* Thin top accent bar */}
         <div className="h-1 bg-gradient-to-r from-rt-purple via-rt-dark-blue to-rt-light-blue flex-shrink-0" />
 
