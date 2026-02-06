@@ -74,7 +74,7 @@ serve(async (req) => {
       customer: customerId,
       line_items: [
         {
-          price: "price_1SxoVfCQ8W0D4Rr5J9ps4zgh",
+          price: "price_1SxSnlFuEsdcjcXmkBlCwXea",
           quantity: 1,
         },
       ],
