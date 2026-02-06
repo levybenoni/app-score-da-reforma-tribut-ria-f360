@@ -3,23 +3,43 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { Calendar, Loader2 } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 interface CalendlyModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   url: string;
+  onEventScheduled?: (scheduledDate: string | null) => void;
 }
 
-const CalendlyModal = ({ open, onOpenChange, url }: CalendlyModalProps) => {
+const CalendlyModal = ({ open, onOpenChange, url, onEventScheduled }: CalendlyModalProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleMessage = useCallback((e: MessageEvent) => {
+    if (e.origin !== "https://calendly.com") return;
+
+    if (e.data?.event === "calendly.event_scheduled") {
+      // Extract scheduled date from the event payload if available
+      const startTime = e.data?.payload?.event?.start_time ?? null;
+      onEventScheduled?.(startTime);
+      // Close modal after a short delay so user sees confirmation
+      setTimeout(() => onOpenChange(false), 1500);
+    }
+  }, [onEventScheduled, onOpenChange]);
 
   useEffect(() => {
     if (!open) {
       setIsLoading(true);
       return;
     }
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [open, handleMessage]);
+
+  useEffect(() => {
+    if (!open) return;
 
     const loadScript = () => {
       return new Promise<void>((resolve) => {

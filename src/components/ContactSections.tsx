@@ -1,21 +1,41 @@
-import { Calendar, MessageCircle, Lock } from "lucide-react";
+import { Calendar, MessageCircle, Lock, CheckCircle2, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+interface SchedulingData {
+  agendamentoRealizado: boolean;
+  agendadoEm: string | null;
+  dataAgendada: string | null;
+}
 
 interface ContactSectionsProps {
   isPremium: boolean;
+  schedulingData: SchedulingData;
   onScheduleClick: () => void;
 }
 
-const ContactSections = ({ isPremium, onScheduleClick }: ContactSectionsProps) => {
+const ContactSections = ({ isPremium, schedulingData, onScheduleClick }: ContactSectionsProps) => {
   const handleWhatsAppClick = () => {
     window.open('https://wa.me/551132314580', '_blank');
+  };
+
+  const isAlreadyScheduled = schedulingData.agendamentoRealizado;
+
+  const formatScheduledDate = (isoDate: string) => {
+    const date = new Date(isoDate);
+    const endDate = new Date(date.getTime() + 30 * 60 * 1000); // +30min
+    const formattedDate = format(date, "dd/MM/yyyy", { locale: ptBR });
+    const startTime = format(date, "HH:mm", { locale: ptBR });
+    const endTime = format(endDate, "HH:mm", { locale: ptBR });
+    return `${formattedDate} — ${startTime} às ${endTime}`;
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
       {/* Agendar Reunião Card */}
       <div className="relative overflow-hidden rounded-2xl border border-rt-purple/10 bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-sm p-6 transition-all duration-300 hover:shadow-lg hover:shadow-rt-purple/10">
-        {/* Premium indicator */}
+        {/* Free plan overlay */}
         {!isPremium && (
           <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center rounded-2xl">
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-rt-purple/20 to-rt-dark-blue/20 flex items-center justify-center mb-4 shadow-lg">
@@ -31,26 +51,73 @@ const ContactSections = ({ isPremium, onScheduleClick }: ContactSectionsProps) =
         )}
 
         <div className={!isPremium ? 'opacity-50' : ''}>
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rt-purple/10 to-rt-dark-blue/10 flex items-center justify-center mb-5 border border-rt-purple/20">
-            <Calendar className="w-7 h-7 text-rt-purple" />
+          {/* Icon */}
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 border ${
+            isAlreadyScheduled 
+              ? 'bg-gradient-to-br from-emerald-500/10 to-emerald-600/10 border-emerald-500/20' 
+              : 'bg-gradient-to-br from-rt-purple/10 to-rt-dark-blue/10 border-rt-purple/20'
+          }`}>
+            {isAlreadyScheduled ? (
+              <CheckCircle2 className="w-7 h-7 text-emerald-600" />
+            ) : (
+              <Calendar className="w-7 h-7 text-rt-purple" />
+            )}
           </div>
 
-          <h3 className="text-xl font-bold text-card-foreground mb-2">
-            Agendar Reunião
-          </h3>
+          {/* Content - switches based on scheduling state */}
+          {isAlreadyScheduled ? (
+            <>
+              <h3 className="text-xl font-bold text-card-foreground mb-2">
+                ✅ Agendamento já realizado
+              </h3>
+              <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
+                Sua reunião estratégica já foi agendada. Em breve você receberá os detalhes por e-mail.
+              </p>
 
-          <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
-            Agende uma reunião estratégica com nossos especialistas para discutir seu plano de ação personalizado.
-          </p>
+              {/* Scheduled date/time display */}
+              {schedulingData.dataAgendada && (
+                <div className="rounded-xl bg-gradient-to-r from-emerald-50 to-emerald-50/50 border border-emerald-200/50 p-4 mb-6">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Calendar className="w-4 h-4 text-emerald-600" />
+                    <span className="text-sm font-semibold text-card-foreground">
+                      {formatScheduledDate(schedulingData.dataAgendada)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">
+                      Horário de Brasília
+                    </span>
+                  </div>
+                </div>
+              )}
 
-          <Button
-            onClick={onScheduleClick}
-            disabled={!isPremium}
-            className="w-full bg-rt-purple hover:bg-rt-purple/90 text-white font-medium py-6 h-auto rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-rt-purple/30 disabled:opacity-50"
-          >
-            <Calendar className="w-5 h-5 mr-2" />
-            Agendar Agora
-          </Button>
+              <Button
+                disabled
+                className="w-full bg-rt-purple/50 text-white font-medium py-6 h-auto rounded-xl cursor-not-allowed opacity-60"
+              >
+                <Calendar className="w-5 h-5 mr-2" />
+                Agendamento concluído
+              </Button>
+            </>
+          ) : (
+            <>
+              <h3 className="text-xl font-bold text-card-foreground mb-2">
+                Agendar Reunião
+              </h3>
+              <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
+                Agende uma reunião estratégica com nossos especialistas para discutir seu plano de ação personalizado.
+              </p>
+              <Button
+                onClick={onScheduleClick}
+                disabled={!isPremium}
+                className="w-full bg-rt-purple hover:bg-rt-purple/90 text-white font-medium py-6 h-auto rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-rt-purple/30 disabled:opacity-50"
+              >
+                <Calendar className="w-5 h-5 mr-2" />
+                Agendar Agora
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
