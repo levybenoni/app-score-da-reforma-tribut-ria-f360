@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowRight, User, Building2, Briefcase, Phone, Mail, DollarSign, FileText, Sparkles, Loader2 } from "lucide-react";
+import { ArrowRight, User, Building2, Briefcase, Phone, Mail, DollarSign, FileText, Sparkles, Loader2, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -192,10 +192,13 @@ const DadosComplementares = () => {
                 </div>
               </div>
               <h1 className="text-2xl lg:text-3xl font-bold text-card-foreground mb-2">
-                Complete seus dados
+                Falta só 1 passo para liberar seu diagnóstico
               </h1>
               <p className="text-muted-foreground">
-                Personalize seu diagnóstico com informações da empresa.
+                Estamos quase concluindo sua análise. Preencha os dados abaixo para personalizar seu diagnóstico e gerar recomendações mais precisas para sua empresa.
+              </p>
+              <p className="text-muted-foreground/70 text-sm mt-2">
+                Leva menos de 30 segundos. Seu relatório será gerado com base nas informações da sua empresa.
               </p>
             </div>
 
@@ -368,7 +371,7 @@ const DadosComplementares = () => {
                 </div>
               </div>
 
-              <div className="pt-4">
+              <div className="pt-4 space-y-3">
                 <Button
                   type="submit"
                   disabled={!isFormValid || isLoading}
@@ -382,12 +385,16 @@ const DadosComplementares = () => {
                       </>
                     ) : (
                       <>
-                        Ver meu resultado
+                        Gerar meu diagnóstico completo
                         <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
                       </>
                     )}
                   </span>
                 </Button>
+                <div className="flex items-center justify-center gap-2 text-muted-foreground/60 text-sm">
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>Seus dados estão protegidos. Não enviamos spam.</span>
+                </div>
               </div>
             </form>
           </div>
