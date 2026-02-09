@@ -79,6 +79,7 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
+      allow_promotion_codes: true,
       success_url: `${origin}/checkout-success?session_id={CHECKOUT_SESSION_ID}&run_id=${runId}`,
       cancel_url: `${origin}/compra`,
       metadata: {
