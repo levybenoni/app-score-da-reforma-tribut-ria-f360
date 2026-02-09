@@ -250,23 +250,30 @@ const DadosComplementares = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="cargo" className="text-card-foreground font-medium text-sm">
+                  <Label className="text-card-foreground font-medium text-sm">
                     Seu Cargo
                   </Label>
                   <div className="relative group">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-rt-purple/10 flex items-center justify-center z-10">
                       <Briefcase className="w-4 h-4 text-rt-purple" />
                     </div>
-                    <Input
-                      id="cargo"
-                      name="cargo"
-                      type="text"
-                      placeholder="Ex: Diretor Financeiro"
+                    <Select
                       value={formData.cargo}
-                      onChange={handleChange}
+                      onValueChange={(value) => handleSelectChange("cargo", value)}
                       disabled={isLoading}
-                      className="pl-14 h-14 input-premium rounded-xl text-base"
-                    />
+                    >
+                      <SelectTrigger className="pl-14 h-14 input-premium rounded-xl text-base">
+                        <SelectValue placeholder="Selecione seu cargo" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="Diretor/Sócio/CEO" className="rounded-lg">Diretor/Sócio/CEO</SelectItem>
+                        <SelectItem value="Gerente/Coordenador/Supervisor" className="rounded-lg">Gerente/Coordenador/Supervisor</SelectItem>
+                        <SelectItem value="Analista/Consultor/Especialista" className="rounded-lg">Analista/Consultor/Especialista</SelectItem>
+                        <SelectItem value="Assistente/Auxiliar" className="rounded-lg">Assistente/Auxiliar</SelectItem>
+                        <SelectItem value="Estudante" className="rounded-lg">Estudante</SelectItem>
+                        <SelectItem value="Outros" className="rounded-lg">Outros</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
