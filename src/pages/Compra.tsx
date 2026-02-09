@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Lock, FileSearch, ClipboardCheck, TrendingUp, Target, FileDown, Users, ArrowRight, Loader2 } from "lucide-react";
+import { Lock, FileSearch, ClipboardCheck, Target, FileDown, Users, ArrowRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -67,10 +67,6 @@ const Compra = () => {
     {
       icon: <ClipboardCheck className="w-5 h-5" />,
       text: "Plano de ação personalizado",
-    },
-    {
-      icon: <TrendingUp className="w-5 h-5" />,
-      text: "Simulação de impacto financeiro",
     },
     {
       icon: <Target className="w-5 h-5" />,
