@@ -101,7 +101,7 @@ const CalendlyModal = ({ open, onOpenChange, url, onEventScheduled }: CalendlyMo
               ref={containerRef}
               className="calendly-inline-widget"
               data-url={calendlyDataUrl}
-              style={{ minWidth: "320px", width: "100%", height: "100%" }}
+              style={{ minWidth: "320px", width: "100%", height: "700px" }}
             />
           )}
         </div>
