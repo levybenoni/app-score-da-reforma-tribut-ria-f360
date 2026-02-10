@@ -63,7 +63,7 @@ const CalendlyModal = ({ open, onOpenChange, url, onEventScheduled }: CalendlyMo
     });
   }, [open]);
 
-  const calendlyDataUrl = `${url}?hide_event_type_details=1&hide_gdpr_banner=1&primary_color=754c99`;
+  const calendlyDataUrl = `${url}?hide_event_type_details=1&hide_gdpr_banner=1&text_color=754c99&primary_color=754c99`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
