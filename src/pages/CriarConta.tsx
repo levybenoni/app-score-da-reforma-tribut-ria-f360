@@ -124,12 +124,6 @@ const CriarConta = () => {
 
       <div className="max-w-md w-full mx-auto relative z-10">
         {/* Header badge */}
-        <div className="flex justify-center mb-8 animate-fade-in-up">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/90 text-sm">
-            <Sparkles className="w-4 h-4" />
-            <span>Acesso ao diagnóstico completo</span>
-          </div>
-        </div>
 
         <div className="glass-card-floating rounded-3xl overflow-hidden animate-fade-in-up delay-100" style={{ animationFillMode: 'backwards' }}>
           {/* Gradient header accent */}
@@ -148,7 +142,7 @@ const CriarConta = () => {
                 Criar sua conta
               </h1>
               <p className="text-muted-foreground animate-text-reveal delay-300" style={{ animationFillMode: 'backwards' }}>
-                Crie sua conta para acessar o diagnóstico completo e agendar sua reunião estratégica.
+                Crie sua conta para acessar a análise completa e agendar sua reunião estratégica.
               </p>
             </div>
 
