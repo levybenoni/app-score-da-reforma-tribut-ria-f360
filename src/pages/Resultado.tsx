@@ -128,7 +128,7 @@ const Resultado = () => {
         <div className="flex justify-center mb-6 animate-fade-in-up">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/90 text-sm">
             <Sparkles className="w-4 h-4" />
-            <span>Diagnóstico concluído</span>
+            <span>Análise concluída</span>
           </div>
         </div>
 
@@ -140,7 +140,7 @@ const Resultado = () => {
             {/* Header */}
             <div className="text-center mb-8">
               <h1 className="text-2xl lg:text-3xl font-bold text-card-foreground mb-2">
-                Seu Diagnóstico de Maturidade está pronto
+                Seu Score da Reforma Tributária está pronto
               </h1>
               <p className="text-muted-foreground">
                 Resumo executivo do nível de preparo da sua empresa para a Reforma Tributária.
@@ -210,7 +210,7 @@ const Resultado = () => {
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-semibold text-card-foreground text-xl flex items-center gap-2">
                     <FileText className="w-5 h-5 text-rt-purple" />
-                    Diagnóstico Detalhado
+                    Relatório Detalhado
                   </h3>
                   
                   {/* Premium Action Button */}
@@ -256,7 +256,7 @@ const Resultado = () => {
                           <Lock className="w-7 h-7 text-rt-purple" />
                         </div>
                         <h4 className="text-xl font-bold text-card-foreground mb-3">
-                          Desbloqueie o diagnóstico completo
+                          Desbloqueie a análise completa
                         </h4>
                         <p className="text-muted-foreground text-sm mb-5 max-w-sm leading-relaxed">
                           Acesse a análise estratégica completa, plano de ação personalizado e reunião com especialista.
