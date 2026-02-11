@@ -53,12 +53,12 @@ const Orientacoes = () => {
           <div className="p-8 md:p-12">
             {/* Title */}
             <h1 className="text-3xl md:text-4xl font-bold text-card-foreground mb-4 text-center animate-text-reveal delay-200" style={{ animationFillMode: 'backwards' }}>
-              Como responder este diagnóstico
+              Como responder este questionário
             </h1>
 
             {/* Description */}
             <p className="text-muted-foreground text-center mb-10 leading-relaxed text-lg max-w-xl mx-auto animate-text-reveal delay-300" style={{ animationFillMode: 'backwards' }}>
-              Este questionário avalia o nível de maturidade da gestão da sua empresa frente à Reforma Tributária — e não o trabalho da contabilidade.
+              O Score avalia o nível de maturidade da gestão da sua empresa frente à Reforma Tributária — e não o trabalho da contabilidade.
             </p>
 
             {/* Cards grid */}
