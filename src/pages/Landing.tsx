@@ -23,7 +23,7 @@ const Landing = () => {
           <div className="mb-8">
             <div className="inline-flex items-center bg-white/10 backdrop-blur-sm px-6 py-3 rounded-full border border-white/20">
               <span className="text-white font-medium text-sm md:text-base tracking-wide">
-                Diagnóstico RT – Maturidade de Gestão para a Reforma Tributária
+                Score da Reforma Tributária - Maturidade de Gestão para a RT
               </span>
             </div>
           </div>
