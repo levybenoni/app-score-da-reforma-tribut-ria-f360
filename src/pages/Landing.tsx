@@ -50,7 +50,7 @@ const Landing = () => {
               size="lg"
               className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 font-medium text-base md:text-lg px-8 py-6 h-auto rounded-full border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 group"
             >
-              Iniciar diagnóstico agora
+              Iniciar análise agora
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
 
@@ -83,7 +83,7 @@ const Landing = () => {
               <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-5">
                 <Shield className="w-6 h-6 text-white/80" />
               </div>
-              <h3 className="text-white font-semibold text-lg mb-2">Diagnóstico Personalizado</h3>
+              <h3 className="text-white font-semibold text-lg mb-2">Relatório Personalizado</h3>
               <p className="text-white/70 text-sm leading-relaxed">
                 Resultado customizado com ações prioritárias para sua empresa.
               </p>
