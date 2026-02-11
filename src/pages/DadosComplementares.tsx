@@ -175,7 +175,7 @@ const DadosComplementares = () => {
         <div className="flex justify-center mb-6 animate-fade-in-up">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/90 text-sm">
             <Sparkles className="w-4 h-4" />
-            <span>Personalização do diagnóstico</span>
+            <span>Personalização do Score</span>
           </div>
         </div>
 
