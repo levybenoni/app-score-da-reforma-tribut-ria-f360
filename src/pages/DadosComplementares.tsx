@@ -192,10 +192,10 @@ const DadosComplementares = () => {
                 </div>
               </div>
               <h1 className="text-2xl lg:text-3xl font-bold text-card-foreground mb-2">
-                Falta só 1 passo para liberar seu diagnóstico
+                Falta só um passo para liberar o Score da sua empresa
               </h1>
               <p className="text-muted-foreground">
-                Estamos quase concluindo sua análise. Preencha os dados abaixo para personalizar seu diagnóstico e gerar recomendações mais precisas para sua empresa.
+                Estamos quase concluindo sua análise. Preencha os dados abaixo para personalizar o seu score e gerar recomendações mais precisas para sua empresa.
               </p>
               <p className="text-muted-foreground/70 text-sm mt-2">
                 Leva menos de 30 segundos. Seu relatório será gerado com base nas informações da sua empresa.
@@ -392,7 +392,7 @@ const DadosComplementares = () => {
                       </>
                     ) : (
                       <>
-                        Gerar meu diagnóstico completo
+                        Descobrir meu Score da Reforma Tributária
                         <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
                       </>
                     )}
