@@ -153,7 +153,7 @@ const Orientacoes = () => {
                     </>
                   ) : (
                     <>
-                      Começar diagnóstico
+                      Começar questionário
                       <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
                     </>
                   )}
