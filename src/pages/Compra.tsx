@@ -159,8 +159,8 @@ const Compra = () => {
 
                 {/* Title */}
                 <h1 className="text-3xl lg:text-4xl font-bold text-card-foreground mb-4 leading-tight">
-                  Diagnóstico<br />
-                  Estratégico Completo
+                  Análise<br />
+                  Estratégica Completa
                 </h1>
 
                 {/* Subtitle */}
