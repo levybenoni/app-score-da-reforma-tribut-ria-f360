@@ -19,20 +19,9 @@ const Landing = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 md:py-12">
         <div className="max-w-4xl mx-auto text-center animate-fade-in-up">
-          {/* Badge */}
-          <div className="mb-8">
-            <div className="inline-flex items-center bg-white/10 backdrop-blur-sm px-6 py-3 rounded-full border border-white/20">
-              <span className="text-white font-medium text-sm md:text-base tracking-wide">
-                Score da Reforma Tributária - Maturidade de Gestão para a RT
-              </span>
-            </div>
-          </div>
-
           {/* Headline */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-8 italic">
-            Reforma Tributária
-            <br />
-            não é só imposto.
+            Score da Reforma Tributária
           </h1>
 
           {/* Subheadline */}
