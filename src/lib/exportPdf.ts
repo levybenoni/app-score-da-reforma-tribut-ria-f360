@@ -99,10 +99,8 @@ export async function exportPdfFromHtml(
         scrollY: 0,
       });
 
-      // Scale: canvas is 2x the element pixels
-      // We need to map element pixel width -> CONTENT_WIDTH_MM
-      const scaleFactor = CONTENT_WIDTH_MM / (elementWidth - 48); // subtract padding
-      const heightMm = (el.offsetHeight) * scaleFactor;
+      // Use actual canvas dimensions for accurate height calculation
+      const heightMm = (canvas.height / canvas.width) * CONTENT_WIDTH_MM;
 
       const imgData = canvas.toDataURL("image/jpeg", 0.95);
       sectionImages.push({ imgData, heightMm });
