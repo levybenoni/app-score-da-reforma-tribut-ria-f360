@@ -22,7 +22,7 @@ const blockNameMap: Record<string, string> = {
   "JURIDICO_CONTRATOS": "Jurídico e Contratos",
 };
 
-const CALENDLY_URL = "https://calendly.com/thiago-diniz-bwa/diagnostico-reforma-tributaria";
+const CALENDLY_URL = "https://calendly.com/thiago-diniz-bwa/score-reforma-tributaria";
 
 const Resultado = () => {
   const navigate = useNavigate();
