@@ -15,7 +15,7 @@ interface ContactSectionsProps {
 
 const ContactSections = ({ isPremium, schedulingData, onScheduleClick }: ContactSectionsProps) => {
   const handleWhatsAppClick = () => {
-    window.open('https://wa.me/551132314580', '_blank');
+    window.open('https://wa.me/5584981787283', '_blank');
   };
 
   const isAlreadyScheduled = schedulingData.agendamentoRealizado;
