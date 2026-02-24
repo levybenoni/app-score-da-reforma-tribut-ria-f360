@@ -1,17 +1,15 @@
-version: "3.9"
+version: '3.8'
 
 services:
-frontend:
-    build: .
+lovable-app:
+    build:
+     context: .
+     dockerfile: Dockerfile
+    container_name: lovable-frontend
     ports:
-     - "8080:80"
-    depends_on:
-     - db
-
-db:
-    image: supabase/postgres
+     - "8080:80" # Mapeia a porta 8080 do seu PC para a 80 do contêiner
     restart: always
     environment:
-     POSTGRES_PASSWORD: 9-SB]6`M2"LaA%o8
-    ports:
-     - "5432:5432"
+     # Variáveis de ambiente devem ser passadas aqui, especialmente as VITE_
+     - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+     - VITE_SUPABASE_PUBLISHABLE_KEY=${VITE_SUPABASE_PUBLISHABLE_KEY}
