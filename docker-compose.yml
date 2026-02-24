@@ -1,15 +1,9 @@
-version: '3.8'
-
 services:
   lovable-app:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: lovable-frontend
-    ports:
-      - "80:80" # Mapeia a porta 8080 do seu PC para a 80 do contêiner
     restart: always
-    environment:
-      # Variáveis de ambiente devem ser passadas aqui
-      VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+    expose:
+      - "80"
