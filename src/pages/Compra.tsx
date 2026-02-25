@@ -235,15 +235,32 @@ const Compra = () => {
                 </div>
 
                 {/* F360 Benefit Card */}
-                <div className="mt-4 rounded-xl border border-rt-purple/20 bg-rt-purple/5 p-4">
-                  <p className="text-sm font-semibold text-rt-purple mb-1">
-                    🎁 Benefício Exclusivo F360
-                  </p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Clientes F360 têm acesso à Análise Estratégica Completa de forma gratuita. Use o cupom{' '}
-                    <span className="font-bold text-card-foreground bg-muted px-1.5 py-0.5 rounded text-xs tracking-wide">BWAF360</span>{' '}
-                    no checkout.
-                  </p>
+                <div className="mt-4 rounded-2xl overflow-hidden" style={{
+                  background: 'linear-gradient(135deg, rgba(117,76,153,0.08) 0%, rgba(143,208,215,0.12) 100%)',
+                  border: '1px solid rgba(143,208,215,0.3)',
+                  boxShadow: '0 4px 20px rgba(117,76,153,0.08), 0 0 0 1px rgba(255,255,255,0.5) inset'
+                }}>
+                  <div className="px-4 py-2.5 flex items-center gap-2" style={{
+                    background: 'linear-gradient(135deg, hsl(var(--rt-dark-blue)) 0%, hsl(var(--rt-purple)) 100%)',
+                  }}>
+                    <span className="text-white text-xs font-bold uppercase tracking-wider">
+                      ✨ Benefício Exclusivo F360
+                    </span>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-sm text-card-foreground leading-relaxed">
+                      Clientes F360 têm acesso <span className="font-semibold">gratuito</span> à Análise Estratégica Completa.
+                    </p>
+                    <div className="mt-3 flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">Use o cupom:</span>
+                      <span className="font-bold text-sm tracking-widest px-3 py-1 rounded-lg text-card-foreground" style={{
+                        background: 'linear-gradient(135deg, rgba(143,208,215,0.2) 0%, rgba(117,76,153,0.1) 100%)',
+                        border: '1px dashed hsl(var(--rt-dark-blue) / 0.4)',
+                      }}>
+                        BWAF360
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
