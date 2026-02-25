@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BarChart3, Shield, TrendingUp } from "lucide-react";
+import logoF360 from "@/assets/logo-f360.png";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -9,11 +10,19 @@ const Landing = () => {
     <div className="min-h-screen bg-rt-gradient flex flex-col">
       {/* Header */}
       <header className="w-full px-6 md:px-12 py-6">
-        <img 
-          src="https://ik.imagekit.io/y082km6do/logobranca.png?updatedAt=1761932188284" 
-          alt="BWA Global" 
-          className="h-8 md:h-10"
-        />
+        <div className="flex items-center gap-4">
+          <img 
+            src="https://ik.imagekit.io/y082km6do/logobranca.png?updatedAt=1761932188284" 
+            alt="BWA Global" 
+            className="h-8 md:h-10"
+          />
+          <div className="w-px h-8 bg-white/40" />
+          <img 
+            src={logoF360}
+            alt="F360" 
+            className="h-8 md:h-10"
+          />
+        </div>
       </header>
 
       {/* Main Content */}
@@ -95,12 +104,17 @@ const Landing = () => {
       {/* Footer */}
       <footer className="w-full py-8 flex flex-col items-center gap-4">
         <img 
-          src="https://ik.imagekit.io/y082km6do/logobrancaW.png?updatedAt=1761932134888" 
-          alt="BWA Global" 
+          src={logoF360}
+          alt="F360" 
           className="h-10 md:h-12 opacity-80"
         />
-        <p className="text-white/60 text-sm">
-          © 2026 BWA Global. Todos os direitos reservados.
+        <p className="text-white/60 text-sm flex items-center gap-2">
+          Powered by
+          <img 
+            src="https://ik.imagekit.io/y082km6do/logobrancaW.png?updatedAt=1761932134888" 
+            alt="BWA Global" 
+            className="h-5 inline-block"
+          />
         </p>
       </footer>
     </div>
