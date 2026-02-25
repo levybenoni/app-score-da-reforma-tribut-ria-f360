@@ -20,7 +20,7 @@ const Landing = () => {
           <img 
             src={logoF360}
             alt="F360" 
-            className="h-8 md:h-10"
+            className="h-6 md:h-8"
           />
         </div>
       </header>
@@ -106,7 +106,7 @@ const Landing = () => {
         <img 
           src={logoF360}
           alt="F360" 
-          className="h-10 md:h-12 opacity-80"
+          className="h-6 md:h-8 opacity-80"
         />
         <p className="text-white/60 text-sm flex items-center gap-2">
           Powered by
