@@ -95,6 +95,9 @@ Deno.serve(async (req) => {
     // Update the run with complementary data
     const updateData: Record<string, string | null> = {}
 
+    // Garantia de origem para leads deste fluxo
+    updateData.fonte = 'F360'
+
     if (userId) updateData.usuarioId = userId
     if (nome) updateData.leadNome = nome
     if (email) updateData.leadEmail = email
