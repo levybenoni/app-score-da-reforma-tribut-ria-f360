@@ -157,13 +157,18 @@ const DadosComplementares = () => {
     }
   };
 
+  const whatsappDigits = formData.whatsapp.replace(/\D/g, '');
+  const isWhatsAppValid = whatsappDigits.length === 0 || whatsappDigits.length === 11;
+  const isWhatsAppFormatValid = whatsappDigits.length === 0 || /^[1-9][1-9]9\d{8}$/.test(whatsappDigits);
+
   const isFormValid = 
     formData.nome &&
     formData.empresa && 
     formData.cargo && 
     formData.email &&
     formData.faturamento &&
-    formData.regime;
+    formData.regime &&
+    isWhatsAppFormatValid;
 
   return (
     <div className="min-h-screen bg-rt-gradient flex items-center justify-center px-4 py-8 relative overflow-hidden">
@@ -300,6 +305,11 @@ const DadosComplementares = () => {
                       className="pl-14 h-14 input-premium rounded-xl text-base"
                     />
                   </div>
+                  {formData.whatsapp && !isWhatsAppFormatValid && (
+                    <p className="text-destructive text-xs mt-1">
+                      Formato inválido. Use: (DDD) 9XXXX-XXXX
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
