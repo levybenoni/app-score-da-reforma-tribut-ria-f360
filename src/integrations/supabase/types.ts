@@ -122,6 +122,7 @@ export type Database = {
           concluidoEm: string | null
           criadoEm: string
           faturamentoAnual: string | null
+          fonte: string | null
           id: string
           ipHash: string | null
           leadEmail: string | null
@@ -140,6 +141,7 @@ export type Database = {
           concluidoEm?: string | null
           criadoEm?: string
           faturamentoAnual?: string | null
+          fonte?: string | null
           id?: string
           ipHash?: string | null
           leadEmail?: string | null
@@ -158,6 +160,7 @@ export type Database = {
           concluidoEm?: string | null
           criadoEm?: string
           faturamentoAnual?: string | null
+          fonte?: string | null
           id?: string
           ipHash?: string | null
           leadEmail?: string | null
