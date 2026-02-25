@@ -56,6 +56,7 @@ Deno.serve(async (req) => {
         status: 'IN_PROGRESS',
         userAgent: userAgent,
         ipHash: ipHash,
+        fonte: 'F360',
       })
       .select('id, publicToken')
       .single()
