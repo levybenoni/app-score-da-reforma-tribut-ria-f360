@@ -113,7 +113,7 @@ const Loading = () => {
           <img 
             src={logoF360}
             alt="F360" 
-            className="h-12 opacity-90"
+            className="h-10 opacity-90"
           />
         </div>
 
