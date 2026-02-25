@@ -233,6 +233,18 @@ const Compra = () => {
                     Acesso imediato ao relatório.
                   </p>
                 </div>
+
+                {/* F360 Benefit Card */}
+                <div className="mt-4 rounded-xl border border-rt-purple/20 bg-rt-purple/5 p-4">
+                  <p className="text-sm font-semibold text-rt-purple mb-1">
+                    🎁 Benefício Exclusivo F360
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Clientes F360 têm acesso à Análise Estratégica Completa de forma gratuita. Use o cupom{' '}
+                    <span className="font-bold text-card-foreground bg-muted px-1.5 py-0.5 rounded text-xs tracking-wide">BWAF360</span>{' '}
+                    no checkout.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
