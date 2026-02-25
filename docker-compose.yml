@@ -1,17 +1,14 @@
-version: '3.8'
-
 services:
-caddy:
-  build:
-    context: .
-    dockerfile: Dockerfile.caddy
-  ports:
-    - "80:80"
-    - "443:443"
-  networks:
-    - web
-  depends_on:
-    - lovable-app
+
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile.caddy
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
     networks:
       - web
     depends_on:
@@ -28,10 +25,6 @@ caddy:
       VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
     networks:
       - web
-
-volumes:
-  caddy_data:
-  caddy_config:
 
 networks:
   web:
