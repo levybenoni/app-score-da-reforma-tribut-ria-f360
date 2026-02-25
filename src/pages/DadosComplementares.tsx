@@ -118,7 +118,8 @@ const DadosComplementares = () => {
           empresa: formData.empresa,
           cargo: formData.cargo,
           faturamento: formData.faturamento,
-          regime: formData.regime
+          regime: formData.regime,
+          fonte: 'F360',
         }
       });
 

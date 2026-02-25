@@ -21,10 +21,13 @@ Deno.serve(async (req) => {
     let userAgent = null
     let ipHash = null
     
+    let fonte = 'F360' // fallback padrão
+    
     try {
       const body = await req.json()
       userAgent = body.userAgent || null
       ipHash = body.ipHash || null
+      if (body.fonte) fonte = body.fonte
     } catch {
       // No body provided, that's fine
     }
@@ -56,7 +59,7 @@ Deno.serve(async (req) => {
         status: 'IN_PROGRESS',
         userAgent: userAgent,
         ipHash: ipHash,
-        fonte: 'F360',
+        fonte: fonte,
       })
       .select('id, publicToken')
       .single()
