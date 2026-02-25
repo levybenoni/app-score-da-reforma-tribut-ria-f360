@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDiagnostic } from "@/hooks/useDiagnostic";
 import { useToast } from "@/hooks/use-toast";
+import logoF360 from "@/assets/logo-f360.png";
 
 const loadingTexts = [
   "Analisando riscos ocultos de margem…",
@@ -102,11 +103,17 @@ const Loading = () => {
 
       <div className="max-w-md w-full mx-auto text-center relative z-10">
         {/* BWA Global Logo */}
-        <div className="mb-12 animate-fade-in-up">
+        <div className="mb-12 animate-fade-in-up flex items-center justify-center gap-4">
           <img 
             src="https://ik.imagekit.io/y082km6do/logobranca.png?updatedAt=1761932188284" 
             alt="BWA Global" 
-            className="h-12 mx-auto opacity-90"
+            className="h-12 opacity-90"
+          />
+          <div className="w-px h-10 bg-white/40" />
+          <img 
+            src={logoF360}
+            alt="F360" 
+            className="h-12 opacity-90"
           />
         </div>
 
