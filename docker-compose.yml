@@ -1,6 +1,19 @@
 version: '3.8'
 
 services:
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+     - "80:80"
+     - "443:443"
+    volumes:
+     - caddy_data:/data
+     - caddy_config:/config
+     - ./Caddyfile:/etc/caddy/Caddyfile
+    networks:
+     - web
   lovable-app:
     build:
       context: .
@@ -13,3 +26,8 @@ services:
       # Variáveis de ambiente devem ser passadas aqui
       VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+volumes:
+  caddy_data:
+  caddy_config:
+networks:
+  web:
