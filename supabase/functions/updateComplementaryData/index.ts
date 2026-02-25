@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json()
-    const { publicToken, nome, email, whatsapp, empresa, cargo, faturamento, regime } = body
+    const { publicToken, nome, email, whatsapp, empresa, cargo, faturamento, regime, fonte } = body
 
     console.log('Received data:', { publicToken, nome, email, empresa, cargo, faturamento, regime })
 
@@ -95,8 +95,8 @@ Deno.serve(async (req) => {
     // Update the run with complementary data
     const updateData: Record<string, string | null> = {}
 
-    // Garantia de origem para leads deste fluxo
-    updateData.fonte = 'F360'
+    // Usa fonte enviada pelo frontend, com fallback para F360
+    updateData.fonte = fonte || 'F360'
 
     if (userId) updateData.usuarioId = userId
     if (nome) updateData.leadNome = nome

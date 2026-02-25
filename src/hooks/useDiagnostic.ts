@@ -36,6 +36,7 @@ export function useDiagnostic() {
       const response = await supabase.functions.invoke('createRun', {
         body: {
           userAgent: navigator.userAgent,
+          fonte: 'F360',
         },
       });
 
