@@ -252,7 +252,7 @@ const Compra = () => {
                       Clientes F360 têm acesso <span className="font-semibold">gratuito</span> à Análise Estratégica Completa.
                     </p>
                     <div className="mt-3 flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">Use o cupom:</span>
+                      <span className="text-xs text-muted-foreground">No checkout, use o cupom:</span>
                       <span className="font-bold text-sm tracking-widest px-3 py-1 rounded-lg text-card-foreground" style={{
                         background: 'linear-gradient(135deg, rgba(143,208,215,0.2) 0%, rgba(117,76,153,0.1) 100%)',
                         border: '1px dashed hsl(var(--rt-dark-blue) / 0.4)',
