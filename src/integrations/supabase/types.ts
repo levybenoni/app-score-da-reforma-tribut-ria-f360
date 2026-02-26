@@ -129,6 +129,7 @@ export type Database = {
           leadNome: string | null
           leadWhatsapp: string | null
           nomeEmpresa: string | null
+          origem: string | null
           publicToken: string
           questionnaireVersionId: string
           regimeTributario: string | null
@@ -148,6 +149,7 @@ export type Database = {
           leadNome?: string | null
           leadWhatsapp?: string | null
           nomeEmpresa?: string | null
+          origem?: string | null
           publicToken: string
           questionnaireVersionId: string
           regimeTributario?: string | null
@@ -167,6 +169,7 @@ export type Database = {
           leadNome?: string | null
           leadWhatsapp?: string | null
           nomeEmpresa?: string | null
+          origem?: string | null
           publicToken?: string
           questionnaireVersionId?: string
           regimeTributario?: string | null
@@ -321,6 +324,7 @@ export type Database = {
         Row: {
           checkoutSessionId: string
           criadoEm: string
+          cupom: string | null
           id: string
           moeda: string
           pagoEm: string | null
@@ -334,6 +338,7 @@ export type Database = {
         Insert: {
           checkoutSessionId: string
           criadoEm?: string
+          cupom?: string | null
           id?: string
           moeda?: string
           pagoEm?: string | null
@@ -347,6 +352,7 @@ export type Database = {
         Update: {
           checkoutSessionId?: string
           criadoEm?: string
+          cupom?: string | null
           id?: string
           moeda?: string
           pagoEm?: string | null
