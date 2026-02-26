@@ -1,3 +1,7 @@
 scorertf360.bwa.global {
-    reverse_proxy lovable-app:80
+  reverse_proxy lovable-app:80
+}
+
+scoredareformatributaria.bwa.global {
+  reverse_proxy scoredareforma-app:80
 }
