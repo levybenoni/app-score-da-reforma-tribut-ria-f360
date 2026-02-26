@@ -1,5 +1,4 @@
-# Etapa 1 - build da aplicação
-FROM node:20-alpine AS build
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -9,10 +8,12 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# Etapa 2 - servir com nginx
 FROM nginx:alpine
 
-COPY --from=build /app/dist /usr/share/nginx/html
+RUN rm /etc/nginx/conf.d/default.conf
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 80
 
