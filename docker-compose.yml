@@ -1,5 +1,4 @@
 services:
-
   caddy:
     build:
       context: .
@@ -11,8 +10,7 @@ services:
       - "443:443"
     networks:
       - web
-    depends_on:
-      - lovable-app
+      - internal
 
   lovable-app:
     build:
@@ -24,8 +22,11 @@ services:
       VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
     networks:
-      - web
+      - internal
 
 networks:
-  web:
+  internal:
     driver: bridge
+  web:
+    external: true
+    name: web
