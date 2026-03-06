@@ -18,12 +18,22 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+function OrigemCapture() {
+  const [searchParams] = useSearchParams();
+  const origem = searchParams.get('origem') || searchParams.get('utm_source');
+  if (origem) {
+    localStorage.setItem('diagnosticOrigem', origem);
+  }
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <OrigemCapture />
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/orientacoes" element={<Orientacoes />} />
