@@ -505,22 +505,31 @@ export type Database = {
         Row: {
           criadoEm: string
           id: string
+          mimeType: string | null
+          nomeArquivo: string | null
           runId: string
           storagePath: string
+          tamanhoBytes: number | null
           tipo: string
         }
         Insert: {
           criadoEm?: string
           id?: string
+          mimeType?: string | null
+          nomeArquivo?: string | null
           runId: string
           storagePath: string
+          tamanhoBytes?: number | null
           tipo: string
         }
         Update: {
           criadoEm?: string
           id?: string
+          mimeType?: string | null
+          nomeArquivo?: string | null
           runId?: string
           storagePath?: string
+          tamanhoBytes?: number | null
           tipo?: string
         }
         Relationships: [
@@ -669,7 +678,31 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      inserir_report_asset: {
+        Args: {
+          p_mimetype?: string
+          p_nomearquivo: string
+          p_runid: string
+          p_storagepath: string
+          p_tipo: string
+        }
+        Returns: {
+          criadoEm: string
+          id: string
+          mimeType: string | null
+          nomeArquivo: string | null
+          runId: string
+          storagePath: string
+          tamanhoBytes: number | null
+          tipo: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "reportAssets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never
