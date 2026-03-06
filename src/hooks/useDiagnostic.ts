@@ -33,10 +33,20 @@ export function useDiagnostic() {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
+      // Recover origem from localStorage or URL (redundant capture)
+      const urlParams = new URLSearchParams(window.location.search);
+      const origemFromUrl = urlParams.get('origem') || urlParams.get('utm_source');
+      const origem = localStorage.getItem('diagnosticOrigem') || origemFromUrl || null;
+
+      if (origemFromUrl && !localStorage.getItem('diagnosticOrigem')) {
+        localStorage.setItem('diagnosticOrigem', origemFromUrl);
+      }
+
       const response = await supabase.functions.invoke('createRun', {
         body: {
           userAgent: navigator.userAgent,
           fonte: 'F360',
+          origem,
         },
       });
 

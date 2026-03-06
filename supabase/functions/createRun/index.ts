@@ -22,12 +22,14 @@ Deno.serve(async (req) => {
     let ipHash = null
     
     let fonte = 'F360' // fallback padrão
+    let origem = null
     
     try {
       const body = await req.json()
       userAgent = body.userAgent || null
       ipHash = body.ipHash || null
       if (body.fonte) fonte = body.fonte
+      if (body.origem) origem = body.origem
     } catch {
       // No body provided, that's fine
     }
@@ -60,6 +62,7 @@ Deno.serve(async (req) => {
         userAgent: userAgent,
         ipHash: ipHash,
         fonte: fonte,
+        origem: origem,
       })
       .select('id, publicToken')
       .single()
