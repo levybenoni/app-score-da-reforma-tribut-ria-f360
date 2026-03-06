@@ -1,10 +1,22 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BarChart3, Shield, TrendingUp } from "lucide-react";
 import logoF360 from "@/assets/logo-f360.png";
 
+const ORIGEM_KEY = 'diagnosticOrigem';
+
 const Landing = () => {
   const navigate = useNavigate();
+
+  // Capture ?origem= from URL and persist in localStorage
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const origem = params.get('origem');
+    if (origem) {
+      localStorage.setItem(ORIGEM_KEY, origem);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-rt-gradient flex flex-col">
