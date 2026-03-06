@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FileText, DollarSign, Link2, Scale, Sparkles, Loader2, AlertTriangle, Lock, Download } from "lucide-react";
-import { exportPdfFromHtml } from "@/lib/exportPdf";
+
 import { useDiagnosticResult } from "@/hooks/useDiagnosticResult";
 import ContactSections from "@/components/ContactSections";
 import CalendlyModal from "@/components/CalendlyModal";
@@ -31,10 +31,43 @@ const Resultado = () => {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExportPdf = useCallback(async () => {
-    if (!htmlReport || isExporting) return;
+    if (isExporting) return;
+    const runId = localStorage.getItem('diagnosticRunId');
+    if (!runId) return;
+
     setIsExporting(true);
     try {
-      await exportPdfFromHtml(htmlReport);
+      const { data: asset, error: assetError } = await supabase
+        .from('reportAssets')
+        .select('storagePath, nomeArquivo')
+        .eq('runId', runId)
+        .eq('tipo', 'pdf')
+        .maybeSingle();
+
+      if (assetError) throw assetError;
+
+      if (!asset) {
+        toast.error("O relatório PDF ainda está sendo processado. Tente novamente em alguns instantes.");
+        return;
+      }
+
+      const { data: urlData, error: urlError } = await supabase.storage
+        .from('relatorios')
+        .createSignedUrl(asset.storagePath, 60);
+
+      if (urlError || !urlData?.signedUrl) {
+        throw urlError || new Error('Falha ao gerar URL');
+      }
+
+      const link = document.createElement('a');
+      link.href = urlData.signedUrl;
+      link.download = asset.nomeArquivo || 'relatorio.pdf';
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
       toast.success("PDF exportado com sucesso!");
     } catch (err) {
       console.error("Error exporting PDF:", err);
@@ -42,7 +75,7 @@ const Resultado = () => {
     } finally {
       setIsExporting(false);
     }
-  }, [htmlReport, isExporting]);
+  }, [isExporting]);
 
   const handleEventScheduled = useCallback(async (scheduledDate: string | null) => {
     const runId = localStorage.getItem('diagnosticRunId');
