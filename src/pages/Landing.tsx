@@ -12,7 +12,7 @@ const Landing = () => {
   // Capture ?origem= from URL and persist in localStorage
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const origem = params.get('origem');
+    const origem = params.get('origem') || params.get('utm_source');
     if (origem) {
       localStorage.setItem(ORIGEM_KEY, origem);
     }
