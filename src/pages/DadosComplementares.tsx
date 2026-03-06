@@ -108,6 +108,8 @@ const DadosComplementares = () => {
 
       console.log("Calling updateComplementaryData with publicToken:", publicToken);
 
+      const origem = localStorage.getItem('diagnosticOrigem');
+
       // Call edge function - works with or without auth
       const { data: result, error: updateError } = await supabase.functions.invoke('updateComplementaryData', {
         body: { 
@@ -120,6 +122,7 @@ const DadosComplementares = () => {
           faturamento: formData.faturamento,
           regime: formData.regime,
           fonte: 'F360',
+          origem: origem || null,
         }
       });
 
@@ -141,6 +144,9 @@ const DadosComplementares = () => {
       if (result.runId) {
         localStorage.setItem('diagnosticRunId', result.runId);
       }
+      
+      // Clean up origem from localStorage after successful save
+      localStorage.removeItem('diagnosticOrigem');
       
       // Save complementary data to localStorage as backup
       localStorage.setItem('rt-complementary-data', JSON.stringify(formData));

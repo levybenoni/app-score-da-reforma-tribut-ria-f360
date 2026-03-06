@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json()
-    const { publicToken, nome, email, whatsapp, empresa, cargo, faturamento, regime, fonte } = body
+    const { publicToken, nome, email, whatsapp, empresa, cargo, faturamento, regime, fonte, origem } = body
 
     console.log('Received data:', { publicToken, nome, email, empresa, cargo, faturamento, regime })
 
@@ -106,6 +106,7 @@ Deno.serve(async (req) => {
     if (cargo) updateData.cargoUsuario = cargo
     if (faturamento) updateData.faturamentoAnual = faturamento
     if (regime) updateData.regimeTributario = regime
+    if (origem) updateData.origem = origem
 
     console.log('Updating run with data:', updateData)
 
